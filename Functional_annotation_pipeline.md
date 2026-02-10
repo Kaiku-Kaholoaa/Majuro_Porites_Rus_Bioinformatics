@@ -1,5 +1,6 @@
 # Functional Annotation of *Porites rus*
 
+### Functional Annotation Pipeline Adopted From Researcher Kevin Wong: https://kevinhwong1.github.io/KevinHWong_Notebook/Porites-astreoides-genome-annotation/ 
 ## Download required databases (Swissprot)
 
 `cat build_swissprot_db.sh`
