@@ -268,3 +268,5 @@ blastdbcmd -db ${DB_NAME} -info
 echo "NR BLAST database successfully built."
 echo "Job finished at $(date)"
 ```
+
+Great work! :)
