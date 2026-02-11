@@ -1,4 +1,4 @@
-# Database Download for Functional Annotation*
+# Database Download for Functional Annotation
 
 Downloading protein databases: SwissProt, Trembl, and nr
 
