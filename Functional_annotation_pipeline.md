@@ -63,6 +63,7 @@ ii) Select the gene model proteins without hits in Swiss-Prot
 
 
 first use awk to print a list of all the Gene Model names from besthits.out
+
 ```
 awk '{print $1}' PastGeneModels_vs_sprot_1e-5_besthit.out > list_of_Pastgenemodelproteins_sprot.txt
 
@@ -81,15 +82,17 @@ Double check if the 'faSomeRecords' script is loaded as a command:
 
 ```faSomeRecords```
 
-faSomeRecords - Extract multiple fa records
-usage:
-   faSomeRecords in.fa listFile out.fa
-options:
-   -exclude - output sequences not in the list file.
+* faSomeRecords - Extract multiple fa records
+* usage:
+   * faSomeRecords in.fa listFile out.fa
+* options:
+   * -exclude - output sequences not in the list file.
+
 
 Perfect! I then ran the -exclude command to exclude the blasted Gene Models from the .faa file
 
 ```faSomeRecords -exclude no_mpi_round3.2.all.maker.proteins.busco.fasta list_of_Pastgenemodelproteins_sprot.txt Past_proteins_names_v1.0.faa.prot4trembl ```
+
 
 Checking to make sure it worked: 
 
