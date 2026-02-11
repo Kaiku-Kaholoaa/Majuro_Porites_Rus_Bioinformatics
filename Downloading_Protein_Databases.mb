@@ -1,0 +1,92 @@
+# Database Download for Functional Annotation*
+
+Downloading protein databases: SwissProt, Trembl, and nr
+
+## Download required databases (Swissprot)
+
+`cat build_swissprot_db.sh`
+
+```bash
+#!/bin/bash
+#SBATCH --job-name=build_swissprot_db
+#SBATCH -p hns,spalumbi,serc
+#SBATCH --time=04:00:00
+#SBATCH --mem=32G
+#SBATCH --cpus-per-task=4
+#SBATCH --mail-type=BEGIN,END,FAIL
+#SBATCH --mail-user=YOUR_EMAIL
+#SBATCH --output=build_swissprot_db.out
+#SBATCH --error=build_swissprot_db.err
+
+set -euo pipefail
+
+echo "Job started on $(hostname) at $(date)"
+
+# ============================
+# CONFIGURATION
+# ============================
+
+DB_DIR=/scratch/users/kaiku/databases/swissprot
+UNIPROT_URL=https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz
+FASTA_GZ=uniprot_sprot.fasta.gz
+FASTA=uniprot_sprot.fasta
+DB_NAME=swissprot
+
+# ============================
+# LOAD MODULES
+# ============================
+
+ml ncbi-blast+/2.16.0
+
+# ============================
+# SETUP DIRECTORY
+# ============================
+
+mkdir -p ${DB_DIR}
+cd ${DB_DIR}
+
+echo "Working directory: $(pwd)"
+
+# ============================
+# DOWNLOAD SWISS-PROT
+# ============================
+
+if [ ! -f ${FASTA_GZ} ]; then
+    echo "Downloading Swiss-Prot FASTA from UniProt..."
+    wget ${UNIPROT_URL}
+else
+    echo "Swiss-Prot FASTA archive already exists, skipping download."
+fi
+
+# ============================
+# UNZIP FASTA
+# ============================
+
+if [ ! -f ${FASTA} ]; then
+    echo "Unzipping Swiss-Prot FASTA..."
+    gunzip -c uniprot_sprot.fasta.gz > uniprot_sprot.fasta
+else
+    echo "Uncompressed FASTA already exists, skipping unzip."
+fi
+
+# ============================
+# BUILD BLAST DATABASE
+# ============================
+
+echo "Building BLAST database..."
+makeblastdb \
+  -in ${FASTA} \
+  -dbtype prot \
+  -parse_seqids \
+  -out ${DB_NAME}
+
+# ============================
+# VERIFY DATABASE
+# ============================
+
+echo "Verifying BLAST database..."
+blastdbcmd -db ${DB_NAME} -info
+
+echo "Swiss-Prot BLAST database successfully built."
+echo "Job finished at $(date)"
+```
