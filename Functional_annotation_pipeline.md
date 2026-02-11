@@ -1,6 +1,8 @@
 # Functional Annotation of *Porites rus*
 
-Functional Annotation Pipeline Adopted From Researcher Kevin Wong: https://kevinhwong1.github.io/KevinHWong_Notebook/Porites-astreoides-genome-annotation/ 
+Functional Annotation Pipeline Adopted From Researcher Kevin Wong: 
+
+https://kevinhwong1.github.io/KevinHWong_Notebook/Porites-astreoides-genome-annotation/ 
 
 ## Download required databases (Swissprot)
 
@@ -149,32 +151,64 @@ first use awk to print a list of all the Gene Model names from besthits.out
 ```
 awk '{print $1}' PastGeneModels_vs_sprot_1e-5_besthit.out > list_of_Pastgenemodelproteins_sprot.txt
 
-wc -l list_of_Pastgenemodelproteins_sprot.txt #30,487
+wc -l list_of_Pastgenemodelproteins_sprot.txt
+#23,678
 ```
 
 Then exclude these Gene Model names from your original fasta/.faa/protein file.
 * needed to load the module that has the script with the -exclude command in it
 
-#first, loaded the newest module for kentUtils/416-foss-2020b
+#first, loaded the modules needed
 
-`module load kentUtils/416-foss-2020b`
+```ml system libpng ml biology ucsc-utils```
 
+Double check if the 'faSomeRecords' script is loaded as a command:
 
-I selected to the prepend-path /opt/software/kentUtils/416-foss-2020b/bin to see if it took me to the 'faSomeRecords' script which it did
+```faSomeRecords```
 
-`/opt/software/kentUtils/416-foss-2020b/bin/faSomeRecords`
+faSomeRecords - Extract multiple fa records
+usage:
+   faSomeRecords in.fa listFile out.fa
+options:
+   -exclude - output sequences not in the list file.
 
-I then ran the -exclude command to exclude the blasted Gene Models from the .faa file
+Perfect! I then ran the -exclude command to exclude the blasted Gene Models from the .faa file
+
+```faSomeRecords -exclude no_mpi_round3.2.all.maker.proteins.busco.fasta list_of_Pastgenemodelproteins_sprot.txt Past_proteins_names_v1.0.faa.prot4trembl ```
+
+Checking to make sure it worked: 
 
 ```
-/opt/software/kentUtils/416-foss-2020b/bin/faSomeRecords -exclude {PATH}/past_struc_annotations_v1/Pastreoides_proteins_v1.fasta list_of_Pastgenemodelproteins_sprot.txt Past_proteins_names_v1.0.faa.prot4trembl
+grep "augustus_masked-CAXIVM010000010.1" list_of_Pastgenemodelproteins_sprot.txt | head
+#augustus_masked-CAXIVM010000010.1-processed-gene-0.3-mRNA-1
+
+grep ">augustus_masked-CAXIVM010000010.1" no_mpi_round3.2.all.maker.proteins.busco.fasta | head
+#>augustus_masked-CAXIVM010000010.1-processed-gene-0.3-mRNA-1 protein AED:1.00 eAED:1.00 QI:0|-1|0|0|-1|1|1|0|1539
+#>augustus_masked-CAXIVM010000010.1-processed-gene-0.2-mRNA-1 protein AED:1.00 eAED:1.00 QI:0|-1|0|0|-1|1|1|0|260
+#>augustus_masked-CAXIVM010000010.1-processed-gene-0.5-mRNA-1 protein AED:1.00 eAED:1.00 QI:0|-1|0|0|-1|1|1|0|70
+
+grep ">augustus_masked-CAXIVM010000010.1" list_of_Pastgenemodelproteins_sprot.txt | head
+#file not present - good!
 ```
+
+*Please also note that an AED of 1 means no transcriptional evidence for the gene model. This is ok because it could mean that you have the genetic evidence for it there, but the rna data could be missing from your transcriptome. As a result, this means that if your protein matches well to swissprot, then in reality you have a high confidence gene model since even though your transcripts are missing from your transcriptome, both gene and protein are present and are aligning to this high quality database.*
 
 Checking the number of Gene Models:
 
-`grep -c ">" Past_proteins_names_v1.0.faa.prot4trembl #34,149`
+`grep -c ">" no_mpi_round3.2.all.maker.proteins.busco.fasta 
+#92,944 [total gene model count]
 
-* use this file to blast against trembl
+grep -c ">" Past_proteins_names_v1.0.faa.prot4trembl
+#69,266 [unaligned gene models to swissprot]
+
+wc -l list_of_Pastgenemodelproteins_sprot.txt
+#23,678 [number of gene models aligned to swissprot]
+
+#92,944 - 69,266 = 23,678
+`
+*Amazing fact check!*
+
+Use this file to blast against trembl
 
 Downloading the .xml file for Blast2Go
 
