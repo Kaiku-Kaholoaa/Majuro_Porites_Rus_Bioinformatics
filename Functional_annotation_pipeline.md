@@ -76,7 +76,11 @@ Then exclude these Gene Model names from your original fasta/.faa/protein file.
 
 #first, loaded the modules needed
 
-```ml system libpng ml biology ucsc-utils```
+```
+ml system libpng 
+
+ml biology ucsc-utils
+```
 
 Double check if the 'faSomeRecords' script is loaded as a command:
 
@@ -162,72 +166,79 @@ echo "STOP" $(date)
 
 #### 10. BLAST the remaining protein sequences against Trembl
 
-`nano trembl_blastp.sh`
+`nano trembl.sbatch`
 
 ```bash
 #!/bin/bash
-#SBATCH --job-name="trembl-blastp-protein"
-#SBATCH -t 240:00:00
-#SBATCH --export=NONE
-#SBATCH --mail-type=BEGIN,END,FAIL
-#SBATCH --mail-user={EMAIL}
+#SBATCH --job-name=TrEMBL_Blast
+#SBATCH -p hns,spalumbi,serc
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=24
+#SBATCH -t 168:00:00
 #SBATCH --mem=100GB
-#SBATCH --error="trembl_blastp_out_error"
-#SBATCH --output="trembl_blastp_out"
-#SBATCH --exclusive
-#SBATCH -D {PATH}/past_struc_annotations_v1/functional_anno_v1
+#SBATCH --mail-type=END,FAIL
+#SBATCH --mail-user=kaiku@stanford.edu
+#SBATCH --output=trembl_blast_out
+#SBATCH --error=trembl_blast_err
 
-echo "START" $(date)
-module load BLAST+/2.11.0-gompi-2020b #load blast module
+set -euo pipefail
 
-echo "Blast against trembl database" $(date)
-blastp -max_target_seqs 5 \
--num_threads 20 \
--db {PATH}/databases/trembl_db/trembl_20211022 \
--query Past_proteins_names_v1.0.faa.prot4trembl \
--evalue 1e-5 \
--outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen' \
--out PastGeneModels_vs_trembl_1e-5_max5.out
+# Load BLAST
+ml biology ncbi-blast+/2.16.0
 
-echo "STOP" $(date)
+echo "Blast against TrEMBL database started at $(date)"
+
+blastp \
+  -db /scratch/users/kaiku/databases/trembl/trembl \
+  -query Past_proteins_names_v1.0.faa.prot4trembl \
+  -evalue 1e-5 \
+  -max_target_seqs 5 \
+  -num_threads $SLURM_CPUS_PER_TASK \
+  -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen' \
+  -out PastGeneModels_vs_trembl_1e-5_max5.out
+
+echo "STOP $(date)"
 ```
 
-`nano trembl_blastp_hit1.sh`
+`nano trembl_max1.sbatch`
 
 ```bash
 #!/bin/bash
-#SBATCH --job-name="trembl-blastp-protein"
-#SBATCH -t 240:00:00
-#SBATCH --export=NONE
-#SBATCH --mail-type=BEGIN,END,FAIL
-#SBATCH --mail-user={EMAIL}
+#SBATCH --job-name=TrEMBL_Blast
+#SBATCH -p hns,spalumbi,serc
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=24
+#SBATCH -t 168:00:00
 #SBATCH --mem=100GB
-#SBATCH --error="trembl_hit1_blastp_out_error"
-#SBATCH --output="trembl_hit1_blastp_out"
-#SBATCH --exclusive
-#SBATCH -D {PATH}/past_struc_annotations_v1/functional_anno_v1
-#SBATCH -c 36
+#SBATCH --mail-type=END,FAIL
+#SBATCH --mail-user=kaiku@stanford.edu
+#SBATCH --output=trembl_max1_out
+#SBATCH --error=trembl_max1_err
 
-echo "START" $(date)
-module load BLAST+/2.11.0-gompi-2020b #load blast module
+set -euo pipefail
 
-echo "Blast against trembl database" $(date)
-blastp -max_target_seqs 1 \
--num_threads 20 \
--db {PATH}/databases/trembl_db/trembl_20211022 \
--query Past_proteins_names_v1.0.faa.prot4trembl \
--evalue 1e-5 \
--outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen' \
--out PastGeneModels_vs_trembl_1e-5_max1.out
+# Load BLAST
+ml biology ncbi-blast+/2.16.0
 
-echo "STOP" $(date)
+echo "Blast against TrEMBL database started at $(date)"
+
+blastp \
+  -db /scratch/users/kaiku/databases/trembl/trembl \
+  -query Past_proteins_names_v1.0.faa.prot4trembl \
+  -evalue 1e-5 \
+  -max_target_seqs 1 \
+  -num_threads $SLURM_CPUS_PER_TASK \
+  -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen' \
+  -out PastGeneModels_vs_trembl_1e-5_max5.out
+
+echo "STOP $(date)"
 ```
 
 Get the best hit for each Gene Model (protein) Trembl
 ```
 cat PastGeneModels_vs_trembl_1e-5_max1.out | sort -k1,1 -k2,2 -k3,3r -k4,4r -k11,11 | awk '!seen[$1]++' > PastGeneModels_vs_trembl_1e-5_besthit.out
 
-wc -l PastGeneModels_vs_trembl_1e-5_besthit.out #24525
+wc -l PastGeneModels_vs_trembl_1e-5_besthit.out #24,132
 ```
 
 Select the gene model proteins without hits in Trembl
@@ -247,7 +258,7 @@ module load kentUtils/416-foss-2020b
 
 #check the number of Gene Models
 
-grep -c ">" Past_proteins_names_v1.0.faa.prot4nr #9624
+grep -c ">" Past_proteins_names_v1.0.faa.prot4nr #45,134
 
 #using this file to blast against nr database
 
@@ -257,29 +268,34 @@ grep -c ">" Past_proteins_names_v1.0.faa.prot4nr #9624
 
 ```bash
 #!/bin/bash
-#SBATCH --job-name="xml-blastp-protein"
-#SBATCH -t 240:00:00
-#SBATCH --export=NONE
-#SBATCH --mail-type=BEGIN,END,FAIL
-#SBATCH --mail-user={EMAIL}
+#SBATCH --job-name=xml_TrEMBL_Blast
+#SBATCH -p hns,spalumbi,serc
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=24
+#SBATCH -t 168:00:00
 #SBATCH --mem=100GB
-#SBATCH --error="xml_blastp_out_terror"
-#SBATCH --output="xml_blastp_tout"
-#SBATCH --exclusive
+#SBATCH --mail-type=END,FAIL
+#SBATCH --mail-user=kaiku@stanford.edu
+#SBATCH --output=trembl_xls_out
+#SBATCH --error=trembl_xls_err
 
-echo "START" $(date)
-module load BLAST+/2.11.0-gompi-2020b #load blast module
+set -euo pipefail
 
-echo "Blast against trembl database for xml" $(date)
-blastp -max_target_seqs 1 \
--num_threads 20 \
--db {PATH}/databases/trembl_db/trembl_20211022 \
--query Past_proteins_names_v1.0.faa.prot4trembl \
--evalue 1e-5 \
--outfmt '5 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen' \
--out Past_protein_blastp_trembl.xml
+# Load BLAST
+ml biology ncbi-blast+/2.16.0
 
-echo "STOP" $(date)
+echo "Blast against TrEMBL database started at $(date)"
+
+blastp \
+  -db /scratch/users/kaiku/databases/trembl/trembl \
+  -query Past_proteins_names_v1.0.faa.prot4trembl \
+  -evalue 1e-5 \
+  -max_target_seqs 1 \
+  -num_threads $SLURM_CPUS_PER_TASK \
+  -outfmt '5 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen' \
+  -out Past_protein_blastp_trembl.xml
+
+echo "STOP $(date)"
 ```
 
 #### 11. BLAST the remaining protein sequences against nr
