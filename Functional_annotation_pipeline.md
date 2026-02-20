@@ -192,11 +192,11 @@ awk -v n=500 '                   # Set variable n=500 (number of sequences per c
 
 Great, with your chunked files now we can blast them to tremble. 
 
-`cat trembl_array.sbatch`
+`cat trembl_array_max5.sbatch`
 
 ```bash
 #!/bin/bash
-#SBATCH --job-name=array_trembl_blast
+#SBATCH --job-name=M5array_trembl_blast
 #SBATCH -p serc,spalumbi,hns
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=16
@@ -212,7 +212,7 @@ set -euo pipefail
 
 DB="/scratch/users/kaiku/databases/trembl/trembl"
 CHUNK_DIR="trembl_chunks"
-OUT_DIR="trembl_out"
+OUT_DIR="trembl_out_max5"
 
 chunk_file=$(ls ${CHUNK_DIR}/chunk_*.faa | sort | sed -n "${SLURM_ARRAY_TASK_ID}p")
 base=$(basename "$chunk_file" .faa)
@@ -236,6 +236,99 @@ We can add them directly using cat, since there are no headers.
 
 `cat chunk_*out > PastGeneModels_vs_trembl_1e-5_max5.out`
 
+Let's also do the same for the best hit proteins.
+
+`cat trembl_array_max1.sbatch`
+
+```bash
+#!/bin/bash
+#SBATCH --job-name=M1_array_trembl_blast
+#SBATCH -p serc,spalumbi,hns
+#SBATCH --nodes=1
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=64G
+#SBATCH -t 96:00:00
+#SBATCH --array=1-139%40
+#SBATCH --output=trembl_logs/%x_%A_%a.out
+#SBATCH --error=trembl_logs/%x_%A_%a.err
+#SBATCH --mail-type=END,FAIL
+#SBATCH --mail-user=kaiku@stanford.edu
+
+set -euo pipefail
+
+DB="/scratch/users/kaiku/databases/trembl/trembl"
+CHUNK_DIR="trembl_chunks"
+OUT_DIR="trembl_out_max1"
+
+chunk_file=$(ls ${CHUNK_DIR}/chunk_*.faa | sort | sed -n "${SLURM_ARRAY_TASK_ID}p")
+base=$(basename "$chunk_file" .faa)
+
+echo "Running chunk: $chunk_file"
+
+if [ ! -d "$OUT_DIR" ]; then
+    mkdir -p "$OUT_DIR"
+fi
+
+blastp \
+  -db "$DB" \
+  -query "$chunk_file" \
+  -out "${OUT_DIR}/${base}.out" \
+  -evalue 1e-5 \
+  -max_target_seqs 5 \
+  -num_threads $SLURM_CPUS_PER_TASK \
+  -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen"
+
+echo "STOP $(date)"
+```
+`cat chunk_*out > PastGeneModels_vs_trembl_1e-5_max5.out`
+
+And for the xml file: 
+
+`cat trembl_array_max5_xml.sbatch `
+
+```bash
+#!/bin/bash
+#SBATCH --job-name=xml_M5array_trembl_blast
+#SBATCH -p serc,spalumbi,hns
+#SBATCH --nodes=1
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=64G
+#SBATCH -t 96:00:00
+#SBATCH --array=1-139%30
+#SBATCH --output=trembl_logs/%x_%A_%a.out
+#SBATCH --error=trembl_logs/%x_%A_%a.err
+#SBATCH --mail-type=END,FAIL
+#SBATCH --mail-user=kaiku@stanford.edu
+
+set -euo pipefail
+
+DB="/scratch/users/kaiku/databases/trembl/trembl"
+CHUNK_DIR="trembl_chunks"
+OUT_DIR="trembl_out_max5_xml"
+
+chunk_file=$(ls ${CHUNK_DIR}/chunk_*.faa | sort | sed -n "${SLURM_ARRAY_TASK_ID}p")
+base=$(basename "$chunk_file" .faa)
+
+echo "Running chunk: $chunk_file"
+
+if [ ! -d "$OUT_DIR" ]; then
+    mkdir -p "$OUT_DIR"
+fi
+
+blastp \
+  -db "$DB" \
+  -query "$chunk_file" \
+  -out "${OUT_DIR}/${base}.xml" \
+  -evalue 1e-5 \
+  -max_target_seqs 5 \
+  -num_threads $SLURM_CPUS_PER_TASK \
+  -outfmt "5 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen"
+
+echo "STOP $(date)"
+```
+
+`cat chunk_*xml > PastGeneModels_vs_trembl_1e-5_max5.xml`
+
 We can then double check the amount of gene models that aligned to the database. As a reminder: 
 
 ```
@@ -248,8 +341,8 @@ wc -l list_of_Pastgenemodelproteins_sprot.txt
 grep -c ">" Past_proteins_names_v1.0.faa.prot4trembl
 #69,266 [unaligned gene models to swissprot, for trembl]
 
-cut -f1 PastGeneModels_vs_trembl_1e-5_max5.out |sort -u| wc -l
-#42,918 [number of gene models aligned to trembl] 
+cut -f1 PastGeneModels_vs_trembl_1e-5_max1.out |sort -u| wc -l
+# [number of gene models aligned to trembl] 
 
 #fact check: 69,266 - 42,918 = 26,348 unmapped protein models
 ```
