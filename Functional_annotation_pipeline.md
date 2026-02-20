@@ -166,6 +166,32 @@ echo "STOP" $(date)
 
 #### First chunk the fasta file of protein models so that we can submit an array, and run all chuncks in parallel ###
 
+```bash
+awk -v n=500 '                   # Set variable n=500 (number of sequences per chunk)
+
+/^>/ {                           # If the line starts with ">" (FASTA header line)
+
+    if (++seq % n == 1) {        # Increment sequence counter.
+                                  # Every time we hit a new header, seq increases by 1.
+                                  # If seq modulo n equals 1, we start a new chunk file.
+                                  # This happens for sequence 1, 501, 1001, etc.
+
+        file=sprintf("trembl_chunks/chunk_%04d.faa", ++filecount)
+                                  # Create new output filename.
+                                  # %04d pads filecount with leading zeros (0001, 0002, ...)
+                                  # filecount increments each time a new chunk starts.
+    }
+}
+
+{ print >> file }                # Print the current line (header OR sequence line)
+                                 # into the current chunk file.
+                                 # >> means append to that file.
+
+' Past_proteins_names_v1.0.faa.prot4trembl
+```
+
+Great, with your chunked files now we can blast them to tremble. 
+
 `cat trembl_array.sbatch`
 
 ```bash
@@ -204,6 +230,31 @@ blastp \
 
 echo "STOP $(date)"
 ```
+
+For this dataset, we have 139 chunks (faa files) and thus 139 outputs in our Trembl_output dir. 
+We can add them directly using cat, since there are no headers. 
+
+`cat chunk_*out > PastGeneModels_vs_trembl_1e-5_max5.out`
+
+We can then double check the amount of gene models that aligned to the database. As a reminder: 
+
+```
+grep -c ">" no_mpi_round3.2.all.maker.proteins.busco.fasta 
+#92,944 [total gene model count]
+
+wc -l list_of_Pastgenemodelproteins_sprot.txt
+#23,678 [number of gene models aligned to swissprot]
+
+grep -c ">" Past_proteins_names_v1.0.faa.prot4trembl
+#69,266 [unaligned gene models to swissprot, for trembl]
+
+cut -f1 PastGeneModels_vs_trembl_1e-5_max5.out |sort -u| wc -l
+#42,918 [number of gene models aligned to trembl] 
+
+#fact check: 69,266 - 42,918 = 26,348 unmapped protein models
+```
+
+
 
 `nano trembl.sbatch`
 
