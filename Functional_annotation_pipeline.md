@@ -6,7 +6,7 @@ https://kevinhwong1.github.io/KevinHWong_Notebook/Porites-astreoides-genome-anno
 
 *Note: Please also be sure that you downloaded your databases!*
 
-https://github.com/Kaiku-Kaholoaa/Majuro_Porites_Rus_Bioinformatics/blob/main/Functional_annotation_pipeline.md
+https://github.com/Kaiku-Kaholoaa/Majuro_Porites_Rus_Bioinformatics/blob/main/Downloading_Protein_Databases.md
 
 ## Align query protein sequences against databases
 
