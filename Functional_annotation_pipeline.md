@@ -10,7 +10,7 @@ https://github.com/Kaiku-Kaholoaa/Majuro_Porites_Rus_Bioinformatics/blob/main/Do
 
 ## Align query protein sequences against databases
 
-#### 1. BLAST the protein sequences against Swiss-Prot (Highest Quality Protein Matches)
+### 1. BLAST the protein sequences against Swiss-Prot (Highest Quality Protein Matches)
 
 `nano swiss_prot.sbatch`
 
@@ -128,9 +128,7 @@ wc -l list_of_Pastgenemodelproteins_sprot.txt
 
 #92,944 - 69,266 = 23,678
 `
-*Amazing fact check!*
-
-Use this file to blast against trembl
+*Amazing fact check! Use this file to blast against trembl after we obtain the xml*
 
 Downloading the .xml file for Blast2Go
 
@@ -164,9 +162,9 @@ blastp -max_target_seqs 5 \
 echo "STOP" $(date)
 ```
 
-#### 2. BLAST the remaining protein sequences against Trembl
+### 2. BLAST the remaining protein sequences against Trembl
 
-### First chunk the fasta file of protein models so that we can submit an array, and run all chuncks in parallel ###
+#### First chunk the fasta file of protein models so that we can submit an array, and run all chuncks in parallel ###
 
 `cat trembl_array.sbatch`
 
