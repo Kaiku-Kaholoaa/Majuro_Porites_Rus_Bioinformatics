@@ -164,7 +164,48 @@ blastp -max_target_seqs 5 \
 echo "STOP" $(date)
 ```
 
-#### 10. BLAST the remaining protein sequences against Trembl
+#### 2. BLAST the remaining protein sequences against Trembl
+
+### First chunk the fasta file of protein models so that we can submit an array, and run all chuncks in parallel ###
+
+`cat trembl_array.sbatch`
+
+```bash
+#!/bin/bash
+#SBATCH --job-name=array_trembl_blast
+#SBATCH -p serc,spalumbi,hns
+#SBATCH --nodes=1
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=64G
+#SBATCH -t 96:00:00
+#SBATCH --array=1-139%30
+#SBATCH --output=trembl_logs/%x_%A_%a.out
+#SBATCH --error=trembl_logs/%x_%A_%a.err
+#SBATCH --mail-type=END,FAIL
+#SBATCH --mail-user=kaiku@stanford.edu
+
+set -euo pipefail
+
+DB="/scratch/users/kaiku/databases/trembl/trembl"
+CHUNK_DIR="trembl_chunks"
+OUT_DIR="trembl_out"
+
+chunk_file=$(ls ${CHUNK_DIR}/chunk_*.faa | sort | sed -n "${SLURM_ARRAY_TASK_ID}p")
+base=$(basename "$chunk_file" .faa)
+
+echo "Running chunk: $chunk_file"
+
+blastp \
+  -db "$DB" \
+  -query "$chunk_file" \
+  -out "${OUT_DIR}/${base}.out" \
+  -evalue 1e-5 \
+  -max_target_seqs 5 \
+  -num_threads $SLURM_CPUS_PER_TASK \
+  -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen"
+
+echo "STOP $(date)"
+```
 
 `nano trembl.sbatch`
 
