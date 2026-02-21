@@ -1,4 +1,4 @@
-# Fst analysis of *Porites rus* 
+# Fst Analysis of *Porites rus* 
 
 ## Prep the data
 
@@ -94,6 +94,13 @@ AJELTAKE	CMI	0.00589973
 CMI	SHERWOODS	0.00401378
 AIRPORT	CMI	0.00382265
 CMI	SR3	0.00120066
+```
+
+
+
+
+
+
 CMI	TOBLAR	0.0011752
 CMI	SR2	0.000931007
 CMI	SR6	-0.00157603
