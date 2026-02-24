@@ -167,6 +167,8 @@ echo "STOP" $(date)
 #### First chunk the fasta file of protein models so that we can submit an array, and run all chuncks in parallel ###
 
 ```bash
+mkdir trembl_chunks
+
 awk -v n=500 '                   # Set variable n=500 (number of sequences per chunk)
 
 /^>/ {                           # If the line starts with ">" (FASTA header line)
@@ -368,7 +370,7 @@ set -euo pipefail
 
 DB="/scratch/users/kaiku/databases/trembl/trembl"
 CHUNK_DIR="trembl_chunks"
-OUT_DIR="trembl_out_max5_xml"
+OUT_DIR="trembl_out_max5_"
 
 chunk_file=$(ls ${CHUNK_DIR}/chunk_*.faa | sort | sed -n "${SLURM_ARRAY_TASK_ID}p")
 base=$(basename "$chunk_file" .faa)
@@ -396,65 +398,183 @@ echo "STOP $(date)"
 
 ### 3. BLAST the remaining protein sequences against NR
 
-`nr_array_max1.sbatch`
+
+#### First chunk the fasta file of protein models so that we can submit an array, and run all chuncks in parallel ###
+
+```bash
+mkdir nr_chunks
+
+awk -v n=500 '                   # Set variable n=500 (number of sequences per chunk)
+
+/^>/ {                           # If the line starts with ">" (FASTA header line)
+
+    if (++seq % n == 1) {        # Increment sequence counter.
+                                  # Every time we hit a new header, seq increases by 1.
+                                  # If seq modulo n equals 1, we start a new chunk file.
+                                  # This happens for sequence 1, 501, 1001, etc.
+
+        file=sprintf("nr_chunks/chunk_%04d.faa", ++filecount)
+                                  # Create new output filename.
+                                  # %04d pads filecount with leading zeros (0001, 0002, ...)
+                                  # filecount increments each time a new chunk starts.
+    }
+}
+
+{ print >> file }                # Print the current line (header OR sequence line)
+                                 # into the current chunk file.
+                                 # >> means append to that file.
+
+' Past_proteins_names_v1.0.faa.prot4nr
+```
+
+```bash
+awk -v n=500 ' /^>/ {                          
+    if (++seq % n == 1) { 
+        file=sprintf("nr_chunks/chunk_%04d.faa", ++filecount)
+    }
+}
+{ print >> file }
+' Past_proteins_names_v1.0.faa.prot4nr
+```
+
+`cat nr_array_max1.sbatch`
 
 ```bash
 #!/bin/bash
-#SBATCH --job-name="ncbi-blastp-protein-out"
-#SBATCH -t 240:00:00
-#SBATCH --export=NONE
-#SBATCH --mail-type=BEGIN,END,FAIL
-#SBATCH --mail-user={EMAIL}
-#SBATCH --mem=100GB
-#SBATCH --error="ncbi_blastp_out_error"
-#SBATCH --output="ncbi_blastp_out"
-#SBATCH --exclusive
+#SBATCH --job-name=M1_nr_array_blast
+#SBATCH -p serc,spalumbi,hns
+#SBATCH --nodes=1
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=64G
+#SBATCH -t 96:00:00
+#SBATCH --array=1-139%40
+#SBATCH --output=nr_max1_logs/%x_%A_%a.out
+#SBATCH --error=nr_max1_logs/%x_%A_%a.err
+#SBATCH --mail-type=END,FAIL
+#SBATCH --mail-user=kaiku@stanford.edu
 
-echo "START" $(date)
-module load BLAST+/2.11.0-gompi-2020b #load blast module
+set -euo pipefail
 
-echo "Blast against ncbi database" $(date)
-blastp -max_target_seqs 5 \
--num_threads $SLURM_CPUS_ON_NODE \
--db /data/shared/ncbi-nr/nr \
--query Past_proteins_names_v1.0.faa.prot4nr \
--evalue 1e-5 \
--outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen' \
--out PastGeneModels_ncbi_max5hits.out
+DB="/scratch/users/kaiku/databases/nr/nr"
+CHUNK_DIR="nr_chunks"
+OUT_DIR="nr_out_max1"
 
-echo "STOP" $(date)
+chunk_file=$(ls ${CHUNK_DIR}/chunk_*.faa | sort | sed -n "${SLURM_ARRAY_TASK_ID}p")
+base=$(basename "$chunk_file" .faa)
+
+echo "Blast against swissprot database" $(date)
+
+echo "Running chunk: $chunk_file"
+
+if [ ! -d "$OUT_DIR" ]; then
+    mkdir -p "$OUT_DIR"
+fi
+
+blastp \
+  -db "$DB" \
+  -query "$chunk_file" \
+  -out "${OUT_DIR}/${base}.out" \
+  -evalue 1e-5 \
+  -max_target_seqs 1 \
+  -num_threads $SLURM_CPUS_PER_TASK \
+  -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen"
+
+echo "STOP $(date)"
 ```
 
+And the same for max 5: 
 
-`nano ncbi_blastp.sh`
+`cat nr_array_max5.sbatch`
 
 ```bash
 #!/bin/bash
-#SBATCH --job-name="ncbi-blastp-protein"
-#SBATCH -t 240:00:00
-#SBATCH --export=NONE
-#SBATCH --mail-type=BEGIN,END,FAIL
-#SBATCH --mail-user={EMAIL}
-#SBATCH --mem=100GB
-#SBATCH --error="ncbi_blastp_out_error"
-#SBATCH --output="ncbi_blastp_out"
-#SBATCH --exclusive
+#SBATCH --job-name=M5_nr_array_blast
+#SBATCH -p serc,spalumbi,hns
+#SBATCH --nodes=1
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=64G
+#SBATCH -t 96:00:00
+#SBATCH --array=1-139%40
+#SBATCH --output=nr_m5_logs/%x_%A_%a.out
+#SBATCH --error=nr_m5_logs/%x_%A_%a.err
+#SBATCH --mail-type=END,FAIL
+#SBATCH --mail-user=kaiku@stanford.edu
 
-echo "START" $(date)
-module load BLAST+/2.11.0-gompi-2020b #load blast module
+set -euo pipefail
 
-echo "Blast against ncbi database" $(date)
-blastp -max_target_seqs 5 \
--num_threads $SLURM_CPUS_ON_NODE \
--db /data/shared/ncbi-nr/nr \
--query Past_proteins_names_v1.0.faa.prot4nr \
--evalue 1e-5 \
--outfmt '5 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen' \
--out PastGeneModels_ncbi.xml
+DB="/scratch/users/kaiku/databases/nr/nr"
+CHUNK_DIR="nr_chunks"
+OUT_DIR="nr_out_max5"
 
-echo "STOP" $(date)
+chunk_file=$(ls ${CHUNK_DIR}/chunk_*.faa | sort | sed -n "${SLURM_ARRAY_TASK_ID}p")
+base=$(basename "$chunk_file" .faa)
+
+echo "Blast against swissprot database" $(date)
+
+echo "Running chunk: $chunk_file"
+
+if [ ! -d "$OUT_DIR" ]; then
+    mkdir -p "$OUT_DIR"
+fi
+
+blastp \
+  -db "$DB" \
+  -query "$chunk_file" \
+  -out "${OUT_DIR}/${base}.out" \
+  -evalue 1e-5 \
+  -max_target_seqs 5 \
+  -num_threads $SLURM_CPUS_PER_TASK \
+  -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen"
+
+echo "STOP $(date)"
 ```
 
+and for the xml file:
+
+`cat nr_array_max5_xml.sbatch`
+
+```bash
+#!/bin/bash
+#SBATCH --job-name=xml_M5_nr_array_blast
+#SBATCH -p serc,spalumbi,hns
+#SBATCH --nodes=1
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=64G
+#SBATCH -t 96:00:00
+#SBATCH --array=1-139%40
+#SBATCH --output=nr_xml_m5_logs/%x_%A_%a.out
+#SBATCH --error=nr_xml_m5_logs/%x_%A_%a.err
+#SBATCH --mail-type=END,FAIL
+#SBATCH --mail-user=kaiku@stanford.edu
+
+set -euo pipefail
+
+DB="/scratch/users/kaiku/databases/nr/nr"
+CHUNK_DIR="nr_chunks"
+OUT_DIR="nr_out_max5_xml"
+
+chunk_file=$(ls ${CHUNK_DIR}/chunk_*.faa | sort | sed -n "${SLURM_ARRAY_TASK_ID}p")
+base=$(basename "$chunk_file" .faa)
+
+echo "Blast against swissprot database" $(date)
+
+echo "Running chunk: $chunk_file"
+
+if [ ! -d "$OUT_DIR" ]; then
+    mkdir -p "$OUT_DIR"
+fi
+
+blastp \
+  -db "$DB" \
+  -query "$chunk_file" \
+  -out "${OUT_DIR}/${base}.out" \
+  -evalue 1e-5 \
+  -max_target_seqs 5 \
+  -num_threads $SLURM_CPUS_PER_TASK \
+  -outfmt "5 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen"
+
+echo "STOP $(date)"
+```
 
 #### 12. Interproscan
 
