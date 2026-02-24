@@ -74,7 +74,7 @@ wc -l list_of_Pastgenemodelproteins_sprot.txt
 Then exclude these Gene Model names from your original fasta/.faa/protein file.
 * needed to load the module that has the script with the -exclude command in it
 
-#first, loaded the modules needed
+#first, load the modules needed for exclude
 
 ```
 ml system libpng 
@@ -280,9 +280,73 @@ blastp \
 
 echo "STOP $(date)"
 ```
-`cat chunk_*out > PastGeneModels_vs_trembl_1e-5_max5.out`
 
-And for the xml file: 
+After navigating to the output dir, we can once again combine our chunks: 
+
+`cat chunk_*out > PastGeneModels_vs_trembl_1e-5_max1.out`
+`cat PastGeneModels_vs_trembl_1e-5_max1.out | sort -k1,1 -k2,2 -k3,3r -k4,4r -k11,11 | awk '!seen[$1]++' > PastGeneModels_vs_trembl_1e-5_besthit.out`
+
+We can then double check the amount of gene models that aligned to the database. 
+
+```bash
+wc -l PastGeneModels_vs_trembl_1e-5_besthit.out #42,918
+```
+
+Select the gene model proteins without hits in Trembl
+
+```bash
+#first use awk to print a list of all the Gene Model names from besthits.out
+
+awk '{print $1}' PastGeneModels_vs_trembl_1e-5_besthit.out > list_of_Pastgenemodelproteins_trembl.txt
+
+* needed to load the module that has the script with the -exclude command in it
+
+#first, load the modules needed for exclude
+
+```
+ml system libpng 
+
+ml biology ucsc-utils
+```
+
+Double check if the 'faSomeRecords' script is loaded as a command:
+
+```faSomeRecords```
+
+Perfect! I then ran the -exclude command to exclude the blasted Gene Models from the .faa file
+
+#then exclude these Gene Model names from your original fasta/.faa/protein file
+
+faSomeRecords -exclude Past_proteins_names_v1.0.faa.prot4trembl list_of_Pastgenemodelproteins_trembl.txt Past_proteins_names_v1.0.faa.prot4nr
+
+#check the number of Gene Models
+
+grep -c ">" Past_proteins_names_v1.0.faa.prot4nr #26,348
+
+#using this file to blast against nr database
+```
+
+Let's quickly double check:
+
+```
+grep -c ">" no_mpi_round3.2.all.maker.proteins.busco.fasta 
+#92,944 [total gene model count]
+
+wc -l list_of_Pastgenemodelproteins_sprot.txt
+#23,678 [number of gene models aligned to swissprot]
+
+grep -c ">" Past_proteins_names_v1.0.faa.prot4trembl
+#69,266 [unaligned gene models to swissprot, for trembl]
+
+cut -f1 PastGeneModels_vs_trembl_1e-5_max1.out |sort -u| wc -l
+#42,918 [number of gene models aligned to trembl] 
+
+#fact check: 69,266 - 42,918 = 26,348 unmapped protein models for NR
+
+grep -c ">" Past_proteins_names_v1.0.faa.prot4nr #26,348 Perfect!
+```
+
+Awesome, let's create the xml file and continue with NR: 
 
 `cat trembl_array_max5_xml.sbatch `
 
@@ -329,161 +393,10 @@ echo "STOP $(date)"
 
 `cat chunk_*xml > PastGeneModels_vs_trembl_1e-5_max5.xml`
 
-We can then double check the amount of gene models that aligned to the database. As a reminder: 
 
-```
-grep -c ">" no_mpi_round3.2.all.maker.proteins.busco.fasta 
-#92,944 [total gene model count]
+### 3. BLAST the remaining protein sequences against NR
 
-wc -l list_of_Pastgenemodelproteins_sprot.txt
-#23,678 [number of gene models aligned to swissprot]
-
-grep -c ">" Past_proteins_names_v1.0.faa.prot4trembl
-#69,266 [unaligned gene models to swissprot, for trembl]
-
-cut -f1 PastGeneModels_vs_trembl_1e-5_max1.out |sort -u| wc -l
-# [number of gene models aligned to trembl] 
-
-#fact check: 69,266 - 42,918 = 26,348 unmapped protein models
-```
-
-
-
-`nano trembl.sbatch`
-
-```bash
-#!/bin/bash
-#SBATCH --job-name=TrEMBL_Blast
-#SBATCH -p hns,spalumbi,serc
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=24
-#SBATCH -t 168:00:00
-#SBATCH --mem=100GB
-#SBATCH --mail-type=END,FAIL
-#SBATCH --mail-user=kaiku@stanford.edu
-#SBATCH --output=trembl_blast_out
-#SBATCH --error=trembl_blast_err
-
-set -euo pipefail
-
-# Load BLAST
-ml biology ncbi-blast+/2.16.0
-
-echo "Blast against TrEMBL database started at $(date)"
-
-blastp \
-  -db /scratch/users/kaiku/databases/trembl/trembl \
-  -query Past_proteins_names_v1.0.faa.prot4trembl \
-  -evalue 1e-5 \
-  -max_target_seqs 5 \
-  -num_threads $SLURM_CPUS_PER_TASK \
-  -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen' \
-  -out PastGeneModels_vs_trembl_1e-5_max5.out
-
-echo "STOP $(date)"
-```
-
-`nano trembl_max1.sbatch`
-
-```bash
-#!/bin/bash
-#SBATCH --job-name=TrEMBL_Blast
-#SBATCH -p hns,spalumbi,serc
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=24
-#SBATCH -t 168:00:00
-#SBATCH --mem=100GB
-#SBATCH --mail-type=END,FAIL
-#SBATCH --mail-user=kaiku@stanford.edu
-#SBATCH --output=trembl_max1_out
-#SBATCH --error=trembl_max1_err
-
-set -euo pipefail
-
-# Load BLAST
-ml biology ncbi-blast+/2.16.0
-
-echo "Blast against TrEMBL database started at $(date)"
-
-blastp \
-  -db /scratch/users/kaiku/databases/trembl/trembl \
-  -query Past_proteins_names_v1.0.faa.prot4trembl \
-  -evalue 1e-5 \
-  -max_target_seqs 1 \
-  -num_threads $SLURM_CPUS_PER_TASK \
-  -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen' \
-  -out PastGeneModels_vs_trembl_1e-5_max5.out
-
-echo "STOP $(date)"
-```
-
-Get the best hit for each Gene Model (protein) Trembl
-```
-cat PastGeneModels_vs_trembl_1e-5_max1.out | sort -k1,1 -k2,2 -k3,3r -k4,4r -k11,11 | awk '!seen[$1]++' > PastGeneModels_vs_trembl_1e-5_besthit.out
-
-wc -l PastGeneModels_vs_trembl_1e-5_besthit.out #24,132
-```
-
-Select the gene model proteins without hits in Trembl
-```bash
-#first use awk to print a list of all the Gene Model names from besthits.out
-
-awk '{print $1}' PastGeneModels_vs_trembl_1e-5_besthit.out > list_of_Pastgenemodelproteins_trembl.txt
-
-#load the newest module for kentUtils/416-foss-2020b
-
-module load kentUtils/416-foss-2020b
-
-#then exclude these Gene Model names from your original fasta/.faa/protein file
-
-/opt/software/kentUtils/416-foss-2020b/bin/faSomeRecords -exclude Past_proteins_names_v1.0.faa.prot4trembl list_of_Pastgenemodelproteins_trembl.txt Past_proteins_names_v1.0.faa.prot4nr
-
-
-#check the number of Gene Models
-
-grep -c ">" Past_proteins_names_v1.0.faa.prot4nr #45,134
-
-#using this file to blast against nr database
-
-```
-
-`nano trembl_blastp_xml.sh`
-
-```bash
-#!/bin/bash
-#SBATCH --job-name=xml_TrEMBL_Blast
-#SBATCH -p hns,spalumbi,serc
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=24
-#SBATCH -t 168:00:00
-#SBATCH --mem=100GB
-#SBATCH --mail-type=END,FAIL
-#SBATCH --mail-user=kaiku@stanford.edu
-#SBATCH --output=trembl_xls_out
-#SBATCH --error=trembl_xls_err
-
-set -euo pipefail
-
-# Load BLAST
-ml biology ncbi-blast+/2.16.0
-
-echo "Blast against TrEMBL database started at $(date)"
-
-blastp \
-  -db /scratch/users/kaiku/databases/trembl/trembl \
-  -query Past_proteins_names_v1.0.faa.prot4trembl \
-  -evalue 1e-5 \
-  -max_target_seqs 1 \
-  -num_threads $SLURM_CPUS_PER_TASK \
-  -outfmt '5 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qlen' \
-  -out Past_protein_blastp_trembl.xml
-
-echo "STOP $(date)"
-```
-
-#### 11. BLAST the remaining protein sequences against nr
-
-`nano ncbi_blastp_out.sh`
+`nr_array_max1.sbatch`
 
 ```bash
 #!/bin/bash
