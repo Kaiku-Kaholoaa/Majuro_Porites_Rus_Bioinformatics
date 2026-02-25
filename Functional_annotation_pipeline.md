@@ -529,7 +529,13 @@ blastp \
 echo "STOP $(date)"
 ```
 
-and for the xml file:
+Checking the outputs:
+
+`cat chunk* > PastGeneModels_ncbi_max1.out`
+`cat PastGeneModels_ncbi_max1.out | sort -k1,1 -k2,2 -k3,3r -k4,4r -k11,11 | awk '!seen[$1]++' > PastGeneModels_vs_nr_1e-5_besthit.out`
+`wc -l PastGeneModels_vs_nr_1e-5_besthit.out #59`
+
+Lets create the for the xml file:
 
 `cat nr_array_max5_xml.sbatch`
 
@@ -576,7 +582,11 @@ blastp \
 echo "STOP $(date)"
 ```
 
-#### 12. Interproscan
+### 4. Interproscan
+
+#### InterProScan identifies conserved protein domains and functional signatures in your proteins.
+
+Think “Does this protein contain known functional domains"? This is what interproscan is used for. 
 
 `sbatch Past_InterProScan.sh`
 
