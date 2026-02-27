@@ -588,46 +588,96 @@ echo "STOP $(date)"
 
 Think “Does this protein contain known functional domains"? This is what interproscan is used for. 
 
-`sbatch Past_InterProScan.sh`
+##### Step 1: Download InterProScan 5.59-91.0
+
+```bash
+cd /scratch/users/kaiku
+wget https://ftp.ebi.ac.uk/pub/software/unix/iprscan/5/5.59-91.0/interproscan-5.59-91.0-64-bit.tar.gz
+tar -xzf interproscan-5.59-91.0-64-bit.tar.gz
+cd interproscan-5.59-91.0
+```
+##### Step 2: Install Interproscan Databases
+
+```bash
+python3 setup.py -f interproscan.properties
+```
+
+##### Step 3: Chunk our large fasta output from Maker: 
+
+```bash
+cd /path/to/funcitonal_annotation_dir
+mkdir ipr_chunks
+
+awk '
+/^>/ {
+    if (seq % 5000 == 0) {
+        file = sprintf("chunk_%03d.fa", ++chunk)
+    }
+    seq++
+}
+{ print > file }
+' no_mpi_round3.2.all.maker.proteins.busco.fasta #<- maker output file
+```
+
+##### Step 4: Run the interproscan array 
+
+`cat interproscan.sbatch`
 
 ```bash
 #!/bin/bash
-#SBATCH --job-name="InterProScan"
-#SBATCH -t 30-00:00:00
-#SBATCH --export=NONE
-#SBATCH --mail-type=BEGIN,END,FAIL
-#SBATCH --mail-user={EMAIL}
-#SBATCH --mem=100GB
-#SBATCH --error="interproscan_out_error"
-#SBATCH --output="interproscan_out"
-#SBATCH --exclusive
-#SBATCH -D {PATH}/past_struc_annotations_v1/functional_anno_v1/InterProScan
+#SBATCH --job-name=ipr_chunk
+#SBATCH --cpus-per-task=12
+#SBATCH --mem=64G
+#SBATCH --time=48:00:00
+#SBATCH --array=1-19
+#SBATCH --output=ipr_%A_%a.out
+#SBATCH --error=ipr_%A_%a.err
+#SBATCH -p serc,spalumbi,hns
+#SBATCH --nodes=1
 
-echo "START $(date)"
+cd /scratch/users/kaiku/interproscan-5.59-91.0
 
-# Load module
-module load InterProScan/5.52-86.0-foss-2021a
-module load Java/11.0.2
-java -version
+# Unique TMP per array task
+export TMPDIR=/scratch/users/kaiku/ipr_tmp_${SLURM_ARRAY_TASK_ID}
+mkdir -p $TMPDIR
 
-interproscan.sh --cpu $SLURM_CPUS_ON_NODE ...
-interproscan.sh -version
-interproscan.sh -f XML -i {PATH}/past_struc_annotations_v1/Pastreoides_proteins_v1.fasta -b Past.interpro.20220113  -iprlookup -goterms -pa
-interproscan.sh -mode convert -f GFF3 -i Past.interpro.20220113.xml -b Past.interpro.20220113
+# Select chunk file
+CHUNK=$(printf "chunk_%03d.fa" $SLURM_ARRAY_TASK_ID)
 
-# -i is the input data
-# -b is the output file base
-# -f is formats
-# -iprlookup enables mapping
-# -goterms is GO Term
-# -pa is pathway mapping
-# -version displays version number
+./interproscan.sh \
+  -i /scratch/users/kaiku/feb26_pipeline/pipeline_dec_24/transcriptomics/dec25_maker2_mpi/functional_annotation/ipr_chunks/$CHUNK \
+  -f XML \
+  -b Past.interpro.chunk_${SLURM_ARRAY_TASK_ID} \
+  -iprlookup \
+  -goterms \
+  -pa \
+  -cpu 12 \
+  -exclappl ProSitePatterns,ProSiteProfiles \
+  -T $TMPDIR
 
 echo "DONE $(date)"
 ```
 
+And then we'll merged the chunk'ed xml output files using this code:
 
-#### 13. Statistics with AGAT
+```bash 
+cd /scratch/users/kaiku/interproscan-5.59-91.0
+
+head -n 1 Past.interpro.chunk_1.xml > Past.interpro.all.xml
+
+for f in Past.interpro.chunk_*.xml; do
+    grep -v '<?xml' "$f" | \
+    grep -v '<protein-matches' | \
+    grep -v '</protein-matches>' >> Past.interpro.all.xml
+done
+
+echo "</protein-matches>" >> Past.interpro.all.xml
+```
+
+Nice!
+
+
+### 5. Statistics with AGAT
 
 #### Porites lutea
 
