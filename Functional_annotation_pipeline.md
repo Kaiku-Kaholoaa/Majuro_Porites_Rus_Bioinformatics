@@ -637,6 +637,8 @@ awk '
 
 cd /scratch/users/kaiku/interproscan-5.59-91.0
 
+ml devel java/11.0.11
+
 # Unique TMP per array task
 export TMPDIR=/scratch/users/kaiku/ipr_tmp_${SLURM_ARRAY_TASK_ID}
 mkdir -p $TMPDIR
@@ -688,6 +690,8 @@ Nice! Also convert to gff and tsv so that we can run statistics with agat:
 #SBATCH --error=ipr_xml2gff.err
 #SBATCH -p serc,spalumbi,hns
 #SBATCH --nodes=1
+
+ml devel java/11.0.11
 
 cd /scratch/users/kaiku/interproscan-5.59-91.0
 
