@@ -674,7 +674,7 @@ done
 echo "</protein-matches>" >> Past.interpro.all.xml
 ```
 
-Nice! Also convert to gff so that we can run statistics with agat:
+Nice! Also convert to gff and tsv so that we can run statistics with agat:
 
 `cat interproscan_xml2gff.sbatch`
 
@@ -697,11 +697,21 @@ mkdir -p $TMPDIR
 
 export _JAVA_OPTIONS="-Xms8G -Xmx60G"
 
+echo "Converting XML → GFF3"
 ./interproscan.sh \
    -mode convert \
    -f GFF3 \
    -i Past.interpro.all.xml \
    -o Past.interpro.all.gff3
+
+echo "Converting XML → TSV"
+./interproscan.sh \
+   -mode convert \
+   -f TSV \
+   -i Past.interpro.all.xml \
+   -o Past.interpro.all.tsv
+
+cp Past.interpro.all.* /scratch/users/kaiku/feb26_pipeline/pipeline_dec_24/transcriptomics/dec25_maker2_mpi/functional_annotation/
 
 echo "DONE $(date)"
 ```
