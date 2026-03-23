@@ -724,26 +724,129 @@ echo "DONE $(date)"
 
 #### Porites rus
 
+First, we have an issue with mismatched IDs. Our Maker gff has contig seq IDs, with transcripts and CDS as attributes. In contrast, our Interproscan IDs are of the sequence IDs used to identify domains (like augustus-merged-MRNA1), and thus these IDs are not bound to the contigs that they came from. We must fix this (map the Interproscan IDs to the contigs), so that we can properly merge the GFFs and calculate statistics. 
+
+1. Trim the FASTA sequences off both gff files
+
+`awk 'BEGIN{f=1} /^##FASTA/{f=0} f{print}' no_mpi_round3.2.all.gff > no_mpi_round3.2.body.gff`
+
+`awk '/^>/{exit} {print}' Past.interpro.all.gff3 > Past.interpro.body.gff3`
+
+2. Create a map for interproscan ID to Contig IDs (while handling duplicates)
+
+`awk -F'\t' '!/^#/ && $3=="mRNA" {
+  if(match($9,/ID=([^;]+)/,m)) print m[1]"\t"$1
+}' no_mpi_round3.2.body.gff | awk -F'\t' '!seen[$1]++{print $1"\t"$2}' > map_mrna2contig.dedup.tsv
+`
+
+Check for duplicates:
+`
+# no duplicate keys
+awk -F'\t' '{print $1}' map_mrna2contig.dedup.tsv | sort | uniq -c | awk '$1>1' | head
+
+# total mappings
+wc -l map_mrna2contig.dedup.tsv
+
+# sample
+head map_mrna2contig.dedup.tsv
+`
+
+3. Use created map to make a new mapped.gff
+
+`awk -F'\t' 'BEGIN{
+  OFS=FS;
+  # load map
+  while((getline < "map_mrna2contig.dedup.tsv")>0){
+    map[$1]=$2
+  }
+}
+# pass through comments unchanged
+/^#/ { print; next }
+
+{
+  orig=$1
+  # remove known duplicate suffix from seqid if present
+  sub(/__dup2$/,"",orig)
+
+  # if exact key exists in map, replace seqid with contig
+  if(orig in map){
+    $1 = map[orig]
+  } else {
+    # otherwise try to match any map key contained in the orig seqid (handles prefixed/suffixed IDs)
+    for(k in map) if(index(orig,k)){
+      $1 = map[k]
+      break
+    }
+  }
+
+  # fix Target= tokens in attributes: remove __dup2 suffix from the target id, then if mapped, replace the target id with the maker mRNA id unchanged
+  if($9 ~ /Target=/){
+    # remove trailing __dup2 from any Target occurrences
+    gsub(/(Target=[^ ]+)__dup2/,"\\1",$9)
+    # optionally, if Target id exactly matches a map key, you could replace it by the mRNA id used in maker;
+    # here we ensure Target stays as the maker mRNA id (no change) but remove dup suffix above.
+    # If you want Target to be contig or other form, adjust here.
+  }
+
+  print
+}' Past.interpro.body.gff3 > Past.interpro.mapped.gff3 
+`
+
+4. Perform quality checks
+`
+cut -f1 no_mpi_round3.2.body.gff | grep -v '^#' | sort -u > ids_gff.txt
+cut -f1 Past.interpro.mapped.gff3 | grep -v '^#' | sort -u > ids_ipr.txt
+echo "maker total:" $(wc -l < ids_gff.txt)
+echo "interpro total:" $(wc -l < ids_ipr.txt)
+echo "overlap:" $(comm -12 ids_gff.txt ids_ipr.txt | wc -l)
+`
+
+`
+echo "maker-only (sample):"; comm -23 ids_gff.txt ids_ipr.txt | head
+echo "interpro-only (should be none, all interpro ids should be included):"; comm -13 ids_gff.txt ids_ipr.txt | head
+`
+
+`
+awk -F'\t' '!/^#/ && $9 ~ /Target=/ { match($9,/Target=([^ ]+)/,t); if(t[1]) print t[1] }' Past.interpro.mapped.gff3 | sort -u > interpro_targets.txt
+awk -F'\t' '!/^#/ && $3=="mRNA" { match($9,/ID=([^;]+)/,m); if(m[1]) print m[1] }' no_mpi_round3.2.body.gff | sort -u > maker_mrnas.txt
+echo "targets not in maker mRNAs:"; comm -23 interpro_targets.txt maker_mrnas.txt | head
+`
+
+`
+echo "original interpro body (sample):"; grep -v '^#' Past.interpro.body.gff3 | head -n 5
+echo "mapped interpro (sample):"; grep -v '^#' Past.interpro.mapped.gff3 | head -n 5
+`
+
+6. Use agat to merge files and conduct stats
+
 `cat agat_stats.sbatch`
 
 ```bash
 #!/bin/bash
 #SBATCH --job-name=agat
 #SBATCH --cpus-per-task=12
-#SBATCH --mem=64G
-#SBATCH --time=12:00:00
+#SBATCH --mem=200G
+#SBATCH --time=36:00:00
 #SBATCH --output=stats_agat.out
 #SBATCH --error=stats_agat.err
 #SBATCH -p serc,spalumbi,hns
 #SBATCH --nodes=1
 
-cd /scratch/users/kaiku/interproscan-5.59-91.0
+cd /scratch/users/kaiku/feb26_pipeline/pipeline_dec_24/transcriptomics/dec25_maker2_mpi/functional_annotation
 
 source /home/users/kaiku/miniconda3/etc/profile.d/conda.sh
-
 conda activate agat_env
 
-agat_sp_statistics.pl --gff Past.interpro.all.gff3 
+# merge the remapped InterPro GFF with the MAKER body GFF (no FASTA)
+agat_sp_manage_functional_annotation.pl \
+  --gff no_mpi_round3.2.body.gff \
+  --interpro Past.interpro.mapped.gff3 \
+  -o complete_prus_maker_with_interpro.gff3
+
+# run statistics on the merged GFF
+agat_sp_statistics.pl \
+  --gff complete_prus_maker_with_interpro.gff3 \
+  -o complete_prus_maker_with_interpro.stats.txt
 
 echo "DONE $(date)"
 ```
