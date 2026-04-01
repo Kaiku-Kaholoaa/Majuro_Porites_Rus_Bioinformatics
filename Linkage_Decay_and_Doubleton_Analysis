@@ -1,0 +1,11 @@
+# Database Download for Functional Annotation
+
+Downloading protein databases: SwissProt, Trembl, and nr
+
+## Download required databases (Swissprot)
+
+`cat build_swissprot_db.sh`
+
+
+
+Great work! :)
