@@ -185,7 +185,49 @@ is to identify the minimum distance upon which your correlations stabilize, so t
 optimal distance to prune is essential for the doubleton analysis, since we'll be including our minor alleles (excluded in this 
 analysis), but need to properly filter for linkage. 
 
+`cat calculate_decay.py`
+
+```bash
+import sys
+import math
+
+bin_dict={}
+
+for i in range(1,50000,500):
+	bin_dict[i, i+499] = [0,0]
+	
+#print(bin_dict)
+#So far we properly set up our distance bins, so that we can later evaluate the avg r^2 for each bin range. 
+
+with open(sys.argv[1]) as file: 
+	next(file)
+	for line in file:
+		l=line.strip().split()	
+		posa=int(l[1])
+		posb=int(l[4])
+		r2=float(l[6])
+		dist=abs(posa-posb)
+
+        #for the fencepost issue (disances of exactly base 500) 
+
+        bin_mult = math.ceil(dist/500)
+		bin_end = 500*bin_mult
+		bin_start = bin_end - 499
+		bin_dict[bin_start, bin_end][0]+=r2
+		bin_dict[bin_start, bin_end][1]+=1
+
+        #calcuated the distances, and added the current r^2 to the total r^2 and 1 to the counter (+=1) 
+
+for i in bin_dict:
+	value=bin_dict[i]
+	r2=value[0]
+	n=value[1]
+	avg=r2/n
+	print(i[0],i[1],avg)
+
+#calculated average for each bin :)
+```
+
+Great work! :) All that's left to do is plot!
 
 
-
-Great work! :)
