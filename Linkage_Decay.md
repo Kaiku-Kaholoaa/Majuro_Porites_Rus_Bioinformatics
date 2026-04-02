@@ -1,142 +1,13 @@
-# Documentation for Linkage Decay
+# Documentation for Linkage Decay Analysis
 
-Linkage Decay
+The purpose of this analysis is to identify the optimal distance for LD pruning. 
 
-## Use file from proper filtering and clone removal
+Conceptually, the closer snps are to each other in the genome, the higher the chance they are inherited together. This analysis helps us identify at what distance do these average corrleations drop, and more importantly plateau. The plateau will indicate that at x distance or greater, the average correlation among linked genes is even (and thus negliable).
 
-`cat pipeline.sbatch`
+In this doc, we will use plink to gather the distances and correlations between snps, and then we will use our own python script to bin distance sizes and calculate average correlations (r^2) for each bin range. Finally, we will plot our results to identify the optimal distance treshold for ld pruning. Knowing this distance will be essential for the doubleton analysis, for which we'll include minor alleles (excluded in this analysis), but will still need to properly filter for linkage. In that analysis, we'll call doubletons and ensure that no doubletons are within x distance of each other.
 
-```bash
-#!/bin/bash
-#SBATCH --job-name=prus_final_qc_pca
-#SBATCH -p serc,hns,spalumbi
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=8
-#SBATCH --mem=128G
-#SBATCH -t 24:00:00
-#SBATCH --mail-type=FAIL
-#SBATCH --mail-user=kaiku@stanford.edu
-
-set -euo pipefail
-
-# ===============================
-# INPUT
-# ===============================
-VCF_IN="bcf_total_compressed_prus_dec25.vcf.gz"
-
-ml biology
-ml bcftools
-ml vcftools
-ml plink/2.0a7
-
-echo "========================================"
-echo " STEP 1: BCFTOOLS VARIANT FILTERING"
-echo "========================================"
-
-# --- 1A: Biallelic SNPs ---
-bcftools view -m2 -M2 -v snps \
-    ${VCF_IN} \
-    -Oz -o tmp_biallelic.vcf.gz
-bcftools index tmp_biallelic.vcf.gz
-
-# --- 1B: QUAL + DP filters ---
-bcftools filter -i 'QUAL>30 && DP>5' \
-    tmp_biallelic.vcf.gz \
-    -Oz -o tmp_filtered.vcf.gz
-bcftools index tmp_filtered.vcf.gz
-
-# --- 1C: Site-level missingness ---
-vcftools \
-    --gzvcf tmp_filtered.vcf.gz \
-    --max-missing 0.80 \
-    --recode --recode-INFO-all \
-    --out tmp_mm80
-
-bgzip -f tmp_mm80.recode.vcf
-tabix -p vcf tmp_mm80.recode.vcf.gz
-
-FILTERED_VCF="tmp_mm80.recode.vcf.gz"
-
-echo "Done filtering. Output = $FILTERED_VCF"
-echo ""
-
-echo "========================================"
-echo " STEP 2: CONVERT TO PGEN"
-echo "========================================"
-
-plink2 \
-    --vcf ${FILTERED_VCF} \
-    --make-pgen \
-    --out tmp_cleaned
-
-echo ""
-
-echo "========================================"
-echo " STEP 3: SET UNIQUE VARIANT IDS"
-echo "========================================"
-
-plink2 \
-    --pfile tmp_cleaned \
-    --set-all-var-ids @:#:\$r:\$a \
-    --make-pgen \
-    --out prus_cleaned_unique
-
-echo ""
-
-echo "========================================"
-echo " STEP 4: PLINK2 SAMPLE + SNP FILTERS"
-echo "========================================"
-# These match best-practice thresholds
-
-plink2 \
-    --pfile prus_cleaned_unique \
-    --geno 0.05 \
-    --mind 0.20 \
-    --maf 0.01 \
-    --max-alleles 2 \
-    --make-pgen \
-    --out prus_qc_final
-
-echo ""
-
-echo "========================================"
-echo " STEP 5: KING RELATEDNESS (cutoff = 0.40)"
-echo "========================================"
-
-# Identify clones (retain <= 0.4)
-plink2 \
-    --pfile prus_qc_final \
-    --king-cutoff 0.40 \
-    --out prus_qc_final_king
-
-# Create clone/duplicate-removed dataset
-plink2 \
-    --pfile prus_qc_final \
-    --keep prus_qc_final_king.king.cutoff.in.id \
-    --make-pgen \
-    --out prus_qc_noclones
-
-echo ""
-
-echo "========================================"
-echo " CLEANING TEMP FILES"
-echo "========================================"
-
-rm -f tmp_biallelic.vcf.gz* \
-      tmp_filtered.vcf.gz* \
-      tmp_mm80.recode.vcf.gz* \
-      tmp_cleaned.*
-
-echo "Temp files removed."
-echo ""
-
-echo "🎉 DONE! Final outputs:"
-echo "  prus_qc_final.*           = fully QC'd dataset"
-echo "  prus_qc_noclones.*        = clone/relative filtered dataset"
-echo ""
-```
-
-Great, now with our fully qa/qc'ed dataset, lets use plink to identify correlated snps. 
+## Step 1: Use plink to obtain our vcor file:
+Starting with our fully qa/qc'ed dataset (prus_qc_noclones), lets use plink to identify correlated snps. 
 
 `cat plink_linkage_decay.sbatch `
 
@@ -167,7 +38,8 @@ plink2 \
 The output will look something like this:
 
 `head linkage_decay2.vcor`
-`#CHROM_A	POS_A	ID_A	CHROM_B	POS_B	ID_B	PHASED_R2
+
+#CHROM_A	POS_A	ID_A	CHROM_B	POS_B	ID_B	PHASED_R2
 OZ037992.1	7731	OZ037992.1:7731:T:C	OZ037992.1	44011	OZ037992.1:44011:C:G	0.209434
 OZ037992.1	7731	OZ037992.1:7731:T:C	OZ037992.1	44570	OZ037992.1:44570:C:A	0.220901
 OZ037992.1	7734	OZ037992.1:7734:T:C	OZ037992.1	7736	OZ037992.1:7736:T:G	1
@@ -176,14 +48,9 @@ OZ037992.1	7734	OZ037992.1:7734:T:C	OZ037992.1	7827	OZ037992.1:7827:T:C	0.305002
 OZ037992.1	7736	OZ037992.1:7736:T:G	OZ037992.1	7778	OZ037992.1:7778:T:A	0.340959
 OZ037992.1	7736	OZ037992.1:7736:T:G	OZ037992.1	7827	OZ037992.1:7827:T:C	0.305099
 OZ037992.1	7739	OZ037992.1:7739:G:A	OZ037992.1	7749	OZ037992.1:7749:A:G	0.748072
-OZ037992.1	7739	OZ037992.1:7739:G:A	OZ037992.1	7806	OZ037992.1:7806:T:G	0.555487`
+OZ037992.1	7739	OZ037992.1:7739:G:A	OZ037992.1	7806	OZ037992.1:7806:T:G	0.555487
 
 Great, now we can write our own python script that will calculate the average r^2 value based on the distances between SNPs. 
-Conceptually, snps in the first bin (distance of 0-500) will have a very high avg correlation (r^2), and as you increase 
-your distance your avg correlations will start to decrease, and eventually plateau. The point of the linkage decay analysis 
-is to identify the minimum distance upon which your correlations stabilize, so that you can optimize your pruning. Knowing the
-optimal distance to prune is essential for the doubleton analysis, since we'll be including our minor alleles (excluded in this 
-analysis), but need to properly filter for linkage. 
 
 `cat calculate_decay.py`
 
