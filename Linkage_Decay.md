@@ -6,7 +6,7 @@ Conceptually, the closer snps are to each other in the genome, the higher the ch
 
 In this doc, we will use plink to gather the distances and correlations between snps, and then we will use our own python script to bin distance sizes and calculate average correlations (r^2) for each bin range. Finally, we will plot our results to identify the optimal distance treshold for ld pruning. Knowing this distance will be essential for the doubleton analysis, for which we'll include minor alleles (excluded in this analysis), but will still need to properly filter for linkage. In that analysis, we'll call doubletons and ensure that no doubletons are within x distance of each other.
 
-## Step 1: Use plink to obtain our vcor file:
+## Step 1: Use plink to obtain our .vcor file:
 Starting with our fully qa/qc'ed dataset (prus_qc_noclones), lets use plink to identify correlated snps. 
 
 `cat plink_linkage_decay.sbatch `
@@ -52,6 +52,7 @@ OZ037992.1	7739	OZ037992.1:7739:G:A	OZ037992.1	7806	OZ037992.1:7806:T:G	0.555487
 
 Great, now we can write our own python script that will calculate the average r^2 value based on the distances between SNPs. 
 
+## Step 2: Calculate average r^2 values across distances (stepsize = 500)
 `cat calculate_decay.py`
 
 ```bash
@@ -95,6 +96,7 @@ for i in bin_dict:
 #calculated average for each bin :)
 ```
 
+## Step 3: Plot!
 Great work! :) All that's left to do is plot!
 
 
