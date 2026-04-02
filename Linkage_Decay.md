@@ -1,8 +1,8 @@
-# Documentation for Linkage Decay and Doubleton Analysis
+# Documentation for Linkage Decay
 
 Linkage Decay
 
-## Proper Filtering and Clone Removal (Business as usual) 
+## Use file from proper filtering and clone removal
 
 `cat pipeline.sbatch`
 
