@@ -1,4 +1,4 @@
-# Documentation for Linkage Decay Analysis
+# Linkage Decay Analysis
 
 The purpose of this analysis is to identify the optimal distance for LD pruning. 
 
