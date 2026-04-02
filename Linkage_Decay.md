@@ -55,7 +55,7 @@ Great, now we can write our own python script that will calculate the average r^
 ## Step 2: Calculate average r^2 values across distances (stepsize = 500)
 `cat calculate_decay.py`
 
-```bash
+```python
 import sys
 import math
 
