@@ -86,3 +86,54 @@ clean_up=0 #removes theVoid directory with individual analysis files, 1 = yes, 0
 TMP= #specify a directory other than the system default temporary directory for temporary files
 
 ```
+
+[kaiku@sh04-ln05 login /scratch/users/kaiku/may18_26_pipeline/transcriptomics/dec25_maker2_mpi/functional_annotation]$ awk '!/^#/ && $2=="maker" && $3=="gene"' no_mpi_round3.2.all.gff | wc -l
+92944
+[kaiku@sh04-ln05 login /scratch/users/kaiku/may18_26_pipeline/transcriptomics/dec25_maker2_mpi/functional_annotation]$ 
+[kaiku@sh04-ln05 login /scratch/users/kaiku/may18_26_pipeline/transcriptomics/dec25_maker2_mpi/functional_annotation]$ # sources/feature types present — confirms evidence tracks survived
+[kaiku@sh04-ln05 login /scratch/users/kaiku/may18_26_pipeline/transcriptomics/dec25_maker2_mpi/functional_annotation]$ awk '!/^#/ && NF>=8 {print $2"\t"$3}' no_mpi_round3.2.all.gff | sort | uniq -c | sort -rn
+17129540 tblastx	match_part
+11765039 blastx	match_part
+4218852 protein2genome	match_part
+3600076 cdna2genome	match_part
+2718076 blastx	protein_match
+2254494 protein2genome	protein_match
+2166067 cdna2genome	expressed_sequence_match
+2164121 repeatmasker	match_part
+2164121 repeatmasker	match
+2121751 tblastx	translated_nucleotide_match
+ 908935 blastn	match_part
+ 632870 est2genome	match_part
+ 417947 snap_masked	match_part
+ 368383 est2genome	expressed_sequence_match
+ 367897 blastn	expressed_sequence_match
+ 328774 maker	exon
+ 324579 maker	CDS
+ 320979 model_gff:maker	match_part
+ 190513 augustus_masked	match_part
+  92944 maker	mRNA
+  92944 maker	gene
+  90652 snap_masked	match
+  88839 model_gff:maker	match
+  41139 augustus_masked	match
+  13429 maker	three_prime_UTR
+  13388 maker	five_prime_UTR
+   3096 .	contig
+[kaiku@sh04-ln05 login /scratch/users/kaiku/may18_26_pipeline/transcriptomics/dec25_maker2_mpi/functional_annotation]$ 
+[kaiku@sh04-ln05 login /scratch/users/kaiku/may18_26_pipeline/transcriptomics/dec25_maker2_mpi/functional_annotation]$ # AED split — evidence-supported models, or only AED==1?
+[kaiku@sh04-ln05 login /scratch/users/kaiku/may18_26_pipeline/transcriptomics/dec25_maker2_mpi/functional_annotation]$ grep -oP '_AED=\K[0-9.]+' no_mpi_round3.2.all.gff \
+>   | awk '{if($1<1)c++; else d++} END{print "AED<1: "c"   AED==1: "d}'
+AED<1: 61715   AED==1: 31229
+[kaiku@sh04-ln05 login /scratch/users/kaiku/may18_26_pipeline/transcriptomics/dec25_maker2_mpi/functional_annotation]$ 
+[kaiku@sh04-ln05 login /scratch/users/kaiku/may18_26_pipeline/transcriptomics/dec25_maker2_mpi/functional_annotation]$ # is the genome FASTA block present? (needed to extract protein/transcript seqs)
+[kaiku@sh04-ln05 login /scratch/users/kaiku/may18_26_pipeline/transcriptomics/dec25_maker2_mpi/functional_annotation]$ grep -n '^##FASTA' no_mpi_round3.2.all.gff
+54615239:##FASTA
+[kaiku@sh04-ln05 login /scratch/users/kaiku/may18_26_pipeline/transcriptomics/dec25_maker2_mpi/functional_annotation]$ 
+[kaiku@sh04-ln05 login /scratch/users/kaiku/may18_26_pipeline/transcriptomics/dec25_maker2_mpi/functional_annotation]$ # inventory of remaining GFFs and sizes
+[kaiku@sh04-ln05 login /scratch/users/kaiku/may18_26_pipeline/transcriptomics/dec25_maker2_mpi/functional_annotation]$ ls -la no_mpi_round3.2.*.gff && wc -l no_mpi_round3.2.*.gff
+-rw-r--r-- 1 kaiku oak_spalumbi 10974762269 Mar  3 10:21 no_mpi_round3.2.all.gff
+-rw-r--r-- 1 kaiku oak_spalumbi 10395582419 Mar 23 11:47 no_mpi_round3.2.body.gff
+   64113397 no_mpi_round3.2.all.gff
+   54615238 no_mpi_round3.2.body.gff
+  118728635 total
+[kaiku@sh04-ln05 login /scratch/users/kaiku/may18_26_pipeline/transcriptomics/dec25_maker2_mpi/functional_annotation]$ 
