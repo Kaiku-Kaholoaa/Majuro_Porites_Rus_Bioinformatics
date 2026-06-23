@@ -533,7 +533,30 @@ Checking the outputs:
 
 `cat chunk* > PastGeneModels_ncbi_max1.out`
 `cat PastGeneModels_ncbi_max1.out | sort -k1,1 -k2,2 -k3,3r -k4,4r -k11,11 | awk '!seen[$1]++' > PastGeneModels_vs_nr_1e-5_besthit.out`
-`wc -l PastGeneModels_vs_nr_1e-5_besthit.out #59`
+`wc -l PastGeneModels_vs_nr_1e-5_besthit.out #only 59`
+
+Added on 6/23/26:
+```
+grep -c ">" no_mpi_round3.2.all.maker.proteins.busco.fasta 
+#92,944 [total gene model count]
+
+wc -l list_of_Pastgenemodelproteins_sprot.txt
+#23,678 [number of gene models aligned to swissprot]
+
+grep -c ">" Past_proteins_names_v1.0.faa.prot4trembl
+#69,266 [unaligned gene models to swissprot, for trembl]
+
+cut -f1 PastGeneModels_vs_trembl_1e-5_max1.out |sort -u| wc -l
+#42,918 [number of gene models aligned to trembl] 
+
+#fact check: 69,266 - 42,918 = 26,348 unmapped protein models for NR
+
+grep -c ">" Past_proteins_names_v1.0.faa.prot4nr #26,348
+
+wc -l PastGeneModels_vs_nr_1e-5_besthit.out #only 59
+
+Unpreviously mapped 26,348 proteins - 59 proteins (mapped to NR) = 26,289 proteins left for IPR 
+```
 
 Lets create the for the xml file:
 
