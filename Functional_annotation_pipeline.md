@@ -699,7 +699,20 @@ done
 echo "</protein-matches>" >> Past.interpro.all.xml
 ```
 
-Added on June 23 2026:
+Added on June 23 2026 from Past.interpro.all.tsv:
+```
+[kaiku@sh04-ln03 login /scratch/users/kaiku/may18_26_pipeline/transcriptomics/dec25_maker2_mpi/functional_annotation]$ cat interproscan_summary_counts.tsv 
+
+metric:	                               count:
+total_maker_proteins_scanned	         92,944
+interproscan_result_rows	            401,525
+proteins_with_any_interproscan_hit	   54,226
+proteins_with_interpro_accession	     30,219
+unique_interpro_entries	               10,117
+proteins_with_go_terms	               18,134
+unique_go_terms	                        2,548
+proteins_with_pathway_annotations	     27,554
+no_interpro_hits  (92944 - 54226) =    38,718
 ```
 
 Nice! Also convert to gff and tsv so that we can run statistics with agat:
