@@ -1,22 +1,86 @@
-# Learning snpEff to annotate our vcf of interesting SNPs
+# Using snpEff For Variant Subset Annotation
 
 Earlier we conducted a GWAS via gemma to identify peaks associated with the top5% heat experienced by corals. We also used pcadapt to
 evaluate outlier snps associated with our first two principle components from our PCA, which showed a slight grouping with a thermal outgroup. 
-These snps were then converted into two different vcf files by filtering the major vcf by the positions of SNPs of interest. 
 
 We also learned that minor allele frequencies can identify hidden trends in human population structure, and can be extremely useful for
 our analysis given our fine spatial scale (< 40km) and our highly-related, mostly panmictic population. The minor allele frequency pca 
 identified that there is a clear subgroup among our thermal individuals, to which we grouped together based on a PC1 threshold. 
 The alleles of this subgroup (n_indiv = 19; total_possible_alleles = 38), were then filtered for private alleles at high frequency. This
 represents alelles that are not present in the greater population, display a frequency of > 20%, and have a total mimimum allele count of 8.
-In the end we idenitfied ~800 alleles at high frequency not present in the main population. These high frequency private alleles were 
-converted into a vcf, and will be supplied to snpEff to idenitfy snp locations (intergenic, intron, upstream/downstream variants, etc.), 
-and mutational changes such as synonymous, missense, stop_gained, splice_acceptor/donor variants, etc. 
+In the end we idenitfied ~800 alleles at high frequency not present in the main population. 
 
-snpEff is able to annotate these vcf files by mapping positions to a database. The database must first be created using the gff that we made of 
-the Porites rus genome in our Gene_Annotation_Pipeline.md.
+The snps from each analysis (GEMMA-GWAS, PCAdapt, and Private Minor Allele Analysis) were then converted into two different vcf files by filtering the comprehensive population vcf by the positions of SNPs of interest. 
 
-## Download required databases (Swissprot)
+snpEff can then annotate these vcf files by mapping snp positions to an annotated database which can idenitfy snp locations (intergenic, intron, upstream/downstream variants, etc.), and mutational changes of interest (including synonymous, missense, stop_gained, splice_acceptor/donor variants, etc.). 
+
+However, the database must first be created using the gff that we made of the Porites rus genome in our Gene_Annotation_Pipeline.md.
+
+## Create the Database
+
+`cd /scratch/users/kaiku/snpEff `
+`mkdir data/prus`
+
+In the prus directory, add both the reference.fna and our GFF file. 
+
+Note: GFF file must not include ##fasta lines at the end, and must only contain the final main features.
+* Final main features include: exon, CDS, mRNA, gene, three_prime_UTR, five_prime_UTR, etc. 
+* Non-gene model features are the lines of evidence from maker2, including: match_part, protein_match, expressed_sequence_match, match, translated_nucleotide_match, etc.
+
+* From our maker2.gff file, we had:
+  
+```
+328774 exon
+324579 CDS
+92944 mRNA
+92944 gene
+13429 three_prime_UTR
+13388 five_prime_UTR
+```
+
+Note: Esure that the IDs are consistent between the .vcf, .gff and .fna files
+
+```
+# VCF contigs
+bcftools view -H private_alleles_for_snpEff.vcf.gz \
+  | cut -f1 \
+  | sort -u \
+  > vcf.contigs.txt
+
+# GFF contigs
+grep -v "^#" /scratch/users/kaiku/snpEff/data/prus/genes.gff \
+  | cut -f1 \
+  | sort -u \
+  > gff.contigs.txt
+
+# FASTA contigs
+grep "^>" /scratch/users/kaiku/snpEff/data/prus/sequences.fa \
+  | sed 's/^>//' \
+  | cut -d" " -f1 \
+  | sort -u \
+  > fasta.contigs.txt
+```
+
+Note: Finally, snpEff expects specifc names for the reference and gff file, which we can symlink using
+
+```
+ln -s genes.clean.gff genes.gff
+ln -s porites_rus_reference_genome.fna sequences.fa 
+```
+
+And now we can build our database of annotations!
+
+```bash
+cd /scratch/users/kaiku/snpEff
+
+java -Xmx16g -jar snpEff.jar build \
+  -gff3 \
+  -v \
+  -noCheckCds \
+  -noCheckProtein \
+  prus
+```
+
 
 `cat build_swissprot_db.sh`
 
