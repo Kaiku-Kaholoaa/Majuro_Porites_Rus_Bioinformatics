@@ -114,7 +114,50 @@ grep -vc "^#" private_snps.snpeff.vcf
 
 All 799 snps were successfully annotated! Nice. 
 
-This script will help with our annotation summary: 
+As a reminder, the output is a vcf so that means that column 8 contains the annotations. 
+
+To view only the annotations, we can isolate the variant lines, then remove everything before the annotations via 
+`sed s/.*ANN=//`
+and anything after the annotations by removing anything following the semicolon:
+`sed s/;.*//`
+
+Great, now these are all the annotations. But most snps will have multiple annotations, so we can cut just the first field which is the most important, remembering that snpEff separates annotations via comma:
+
+`cut -f1 -d ","`
+
+This should leave each snpEff field separated by "|". we can replace this with a new line for ease:
+
+`tr "|" "\n" `
+
+For which we can number our new lines using:
+
+`nl -ba`
+
+Awesome, this is complete! As a reminder, snpEff usually follows the following format:
+
+```bash
+1   Allele
+2   Effect #biological consequence, like missense or stop_gain_variant
+3   Impact #predicted impact based the biological consequence (high impact, moderate, low, etc.)
+4   Gene name #name of the associated gene from the database
+5   Gene ID #unique gene ID that will be used for the functional annotation
+6   Feature type #gene, cds, intron, etc. Since maker2 predicted based on transcripts, most would be transcripts. 
+7   Transcript ID
+8   Transcript biotype
+9   Exon/intron rank
+10  HGVS.c
+11  HGVS.p
+12  cDNA position/length
+13  CDS position/length
+14  Protein position/length
+15  Distance
+16  Warnings/errors
+```
+Usually, we care about fields 1-6ish. 
+
+Cool! 
+
+## This script will help with our annotation summary: 
 
 ```bash
 cd /scratch/users/kaiku/snpEff/prus_analysis
@@ -306,6 +349,7 @@ cut -f10 private_snps.HIGH_MODERATE.main_annotation.tsv \
 echo "Finished. Read the report with:"
 echo "cat private_snps.snpeff.summary.txt"
 ```
+## Summary Results 
 
 ```bash
 cat private_snps.snpeff.summary.txt
