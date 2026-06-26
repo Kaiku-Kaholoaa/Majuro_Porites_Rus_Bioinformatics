@@ -136,4 +136,4 @@ AED<1: 61715   AED==1: 31229
    64113397 no_mpi_round3.2.all.gff
    54615238 no_mpi_round3.2.body.gff
   118728635 total
-[kaiku@sh04-ln05 login /scratch/users/kaiku/may18_26_pipeline/transcriptomics/dec25_maker2_mpi/functional_annotation]$ 
+```
