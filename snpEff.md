@@ -3,12 +3,10 @@
 Earlier we conducted a GWAS via gemma to identify peaks associated with the top5% heat experienced by corals. We also used pcadapt to
 evaluate outlier snps associated with our first two principle components from our PCA, which showed a slight grouping with a thermal outgroup. 
 
-We also learned that minor allele frequencies can identify hidden trends in human population structure, and can be extremely useful for
-our analysis given our fine spatial scale (< 40km) and our highly-related, mostly panmictic population. The minor allele frequency pca 
-identified that there is a clear subgroup among our thermal individuals, to which we grouped together based on a PC1 threshold. 
-The alleles of this subgroup (n_indiv = 19; total_possible_alleles = 38), were then filtered for private alleles at high frequency. This
-represents alelles that are not present in the greater population, display a frequency of > 20%, and have a total mimimum allele count of 8.
-In the end we idenitfied ~800 alleles at high frequency not present in the main population. 
+We also learned that minor allele frequencies can identify hidden trends in human population structure, and can be extremely useful for our analysis given our fine spatial scale (< 40km) and our highly-related, mostly panmictic population. The minor allele frequency pca  identified that there is a clear subgroup among our thermal individuals, to which we grouped together based on a PC1 threshold.  The alleles of this subgroup (n_indiv = 19; total_possible_alleles = 38), were then filtered for private alleles at high frequency. This represents alelles that are not present in the greater population, display a frequency of > 20%, and have a total mimimum allele count of 8. In the end we idenitfied 799 alleles at high frequency not present in the main population. 
+
+<img width="3000" height="2100" alt="mac2_maf005_ld" src="https://github.com/user-attachments/assets/ad48d023-17e3-41ab-b02b-df37e65ad943" />
+Fig 1: PCA of Rare Alleles (MAC > 1; MAF <= 0.05). Upper left quadrant became the subgroup that was compared with the rest of the population. Subgroup contained 799 alleles at high frequency not present in the main population. 
 
 The snps from each analysis (GEMMA-GWAS, PCAdapt, and Private Minor Allele Analysis) were then converted into two different vcf files by filtering the comprehensive population vcf by the positions of SNPs of interest. 
 
