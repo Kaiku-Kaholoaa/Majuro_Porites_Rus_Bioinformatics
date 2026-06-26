@@ -40,7 +40,7 @@ Note: GFF file must not include ##fasta lines at the end, and must only contain 
 
 Note: Esure that the IDs are consistent between the .vcf, .gff and .fna files
 
-```
+```bash
 # VCF contigs
 bcftools view -H private_alleles_for_snpEff.vcf.gz \
   | cut -f1 \
@@ -63,12 +63,14 @@ grep "^>" /scratch/users/kaiku/snpEff/data/prus/sequences.fa \
 
 Note: Finally, snpEff expects specifc names for the reference and gff file, which we can symlink using
 
-```
+```bash
 ln -s genes.clean.gff genes.gff
 ln -s porites_rus_reference_genome.fna sequences.fa 
 ```
 
-And now we can build our database of annotations!
+And now we can build our database of annotations! Do this using the .jar file with the build command. 
+
+Here the -Xmx16g flag requests 16G of memory, with the -gff3 flag since that is what we're building our database on, and -v for verbose messaging. Additionally, snpEff normally checks created databases against a known CDS or Protein file, but since we do not have that, we just omit and continue. Finally we call it prus for consistency. 
 
 ```bash
 cd /scratch/users/kaiku/snpEff
@@ -81,270 +83,293 @@ java -Xmx16g -jar snpEff.jar build \
   prus
 ```
 
+And let's check the output exists: 
 
-`cat build_swissprot_db.sh`
+`ls -lh data/prus/snpEffectPredictor.bin`
+
+Great! Now we can start annotating:
+
+## Annotations and Summary Statistics
+
+To annotate using snpEff, we once again call the .jar file but this time use the ann command. Here we'll just focus on the private snp analysis for simplicity. Our vcf contains 799 snps. 
 
 ```bash
-#!/bin/bash
-#SBATCH --job-name=build_swissprot_db
-#SBATCH -p hns,spalumbi,serc
-#SBATCH --time=04:00:00
-#SBATCH --mem=32G
-#SBATCH --cpus-per-task=4
-#SBATCH --mail-type=BEGIN,END,FAIL
-#SBATCH --mail-user=YOUR_EMAIL
-#SBATCH --output=build_swissprot_db.out
-#SBATCH --error=build_swissprot_db.err
+cd /scratch/users/kaiku/snpEff/prus_analysis
 
-set -euo pipefail
-
-echo "Job started on $(hostname) at $(date)"
-
-# ============================
-# CONFIGURATION
-# ============================
-
-DB_DIR=/scratch/users/kaiku/databases/swissprot
-UNIPROT_URL=https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz
-FASTA_GZ=uniprot_sprot.fasta.gz
-FASTA=uniprot_sprot.fasta
-DB_NAME=swissprot
-
-# ============================
-# LOAD MODULES
-# ============================
-
-ml ncbi-blast+/2.16.0
-
-# ============================
-# SETUP DIRECTORY
-# ============================
-
-mkdir -p ${DB_DIR}
-cd ${DB_DIR}
-
-echo "Working directory: $(pwd)"
-
-# ============================
-# DOWNLOAD SWISS-PROT
-# ============================
-
-if [ ! -f ${FASTA_GZ} ]; then
-    echo "Downloading Swiss-Prot FASTA from UniProt..."
-    wget ${UNIPROT_URL}
-else
-    echo "Swiss-Prot FASTA archive already exists, skipping download."
-fi
-
-# ============================
-# UNZIP FASTA
-# ============================
-
-if [ ! -f ${FASTA} ]; then
-    echo "Unzipping Swiss-Prot FASTA..."
-    gunzip -c uniprot_sprot.fasta.gz > uniprot_sprot.fasta
-else
-    echo "Uncompressed FASTA already exists, skipping unzip."
-fi
-
-# ============================
-# BUILD BLAST DATABASE
-# ============================
-
-echo "Building BLAST database..."
-makeblastdb \
-  -in ${FASTA} \
-  -dbtype prot \
-  -parse_seqids \
-  -out ${DB_NAME}
-
-# ============================
-# VERIFY DATABASE
-# ============================
-
-echo "Verifying BLAST database..."
-blastdbcmd -db ${DB_NAME} -info
-
-echo "Swiss-Prot BLAST database successfully built."
-echo "Job finished at $(date)"
-```
-Great, got the SwissProt Database! Now lets do the same thing for TrEMBL (Translated EMBL Nucleotide Sequence Data Library) 
-
-## Download required databases (TrEMBL)
-
-`cat build_trembl_db.sbatch`
-
-```
-#!/bin/bash
-#SBATCH --job-name=build_trembl_db
-#SBATCH -p hns,spalumbi,serc
-#SBATCH --time=04:00:00
-#SBATCH --mem=32G
-#SBATCH --cpus-per-task=4
-#SBATCH --mail-type=BEGIN,END,FAIL
-#SBATCH --mail-user=kaiku@stanford.edu
-#SBATCH --output=build_trembl_db.out
-#SBATCH --error=build_trembl_db.err
-
-set -euo pipefail
-
-echo "Job started on $(hostname) at $(date)"
-
-# ============================
-# CONFIGURATION
-# ============================
-
-DB_DIR=/scratch/users/kaiku/databases/trembl
-UNIPROT_URL=https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_trembl.fasta.gz
-FASTA_GZ=uniprot_trembl.fasta.gz
-FASTA=uniprot_trembl.fasta
-DB_NAME=trembl
-
-# ============================
-# LOAD MODULES
-# ============================
-
-ml ncbi-blast+/2.16.0
-
-# ============================
-# SETUP DIRECTORY
-# ============================
-
-mkdir -p ${DB_DIR}
-cd ${DB_DIR}
-
-echo "Working directory: $(pwd)"
-
-# ============================
-# DOWNLOAD TrEMBL
-# ============================
-
-if [ ! -f ${FASTA_GZ} ]; then
-    echo "Downloading TrEMBL FASTA from UniProt..."
-    wget ${UNIPROT_URL}
-else
-    echo "TrEMBL FASTA archive already exists, skipping download."
-fi
-
-# ============================
-# UNZIP FASTA
-# ============================
-
-if [ ! -f ${FASTA} ]; then
-    echo "Unzipping TrEMBL FASTA..."
-    gunzip -c ${FASTA_GZ} > ${FASTA}
-else
-    echo "Uncompressed FASTA already exists, skipping unzip."
-fi
-
-# ============================
-# BUILD BLAST DATABASE
-# ============================
-
-echo "Building TrEMBL BLAST database..."
-makeblastdb \
-  -in ${FASTA} \
-  -dbtype prot \
-  -parse_seqids \
-  -out ${DB_NAME}
-
-# ============================
-# VERIFY DATABASE
-# ============================
-
-echo "Verifying BLAST database..."
-blastdbcmd -db ${DB_NAME} -info
-
-echo "TrEMBL BLAST database successfully built."
-echo "Job finished at $(date)"
+java -Xmx8g -jar ../snpEff.jar ann \
+  -noStats \ #Tells SnpEff not to generate the HTML summary/statistics report. This avoids extra files and issues.
+  -v \ #verbose
+  prus \ #database
+  private_alleles_for_snpEff.vcf.gz \ #input vcf
+  > private_snps.snpeff.vcf #output vcf
 ```
 
-Awesome! Now lets get the nr database:
+And we can count the number of successful annotations:
 
-## Download required databases (NR)
-
-`cat build_nr_db.sbatch`
-
-```
-#!/bin/bash
-#SBATCH --job-name=build_nr_db
-#SBATCH -p hns,spalumbi,serc
-#SBATCH --time=48:00:00
-#SBATCH --mem=64G
-#SBATCH --cpus-per-task=8
-#SBATCH --mail-type=BEGIN,END,FAIL
-#SBATCH --mail-user=kaiku@stanford.edu
-#SBATCH --output=build_nr_db.out
-#SBATCH --error=build_nr_db.err
-
-set -euo pipefail
-
-echo "Job started on $(hostname) at $(date)"
-
-# ============================
-# CONFIGURATION
-# ============================
-
-DB_DIR=/scratch/users/kaiku/databases/nr
-NCBI_FTP=https://ftp.ncbi.nlm.nih.gov/blast/db/FASTA
-FASTA_GZ=nr.gz
-FASTA=nr
-DB_NAME=nr
-
-# ============================
-# LOAD MODULES
-# ============================
-
-ml ncbi-blast+/2.16.0
-
-# ============================
-# SETUP DIRECTORY
-# ============================
-
-mkdir -p ${DB_DIR}
-cd ${DB_DIR}
-
-echo "Working directory: $(pwd)"
-
-# ============================
-# DOWNLOAD NR FASTA
-# ============================
-
-echo "Downloading NR FASTA from NCBI..."
-#wget ${NCBI_FTP}/${FASTA_GZ}
-
-# ============================
-# UNZIP NR
-# ============================
-
-if [ ! -f ${FASTA} ]; then
-    echo "Unzipping NR (this will take time)..."
-    gunzip -c ${FASTA_GZ} > ${FASTA}
-else
-    echo "Uncompressed NR already exists, skipping unzip."
-fi
-
-# ============================
-# BUILD BLAST DATABASE
-# ============================
-
-echo "Building NR BLAST database (this may take many hours)..."
-
-makeblastdb \
-  -in ${FASTA} \
-  -dbtype prot \
-  -parse_seqids \
-  -out ${DB_NAME}
-
-# ============================
-# VERIFY DATABASE
-# ============================
-
-echo "Verifying BLAST database..."
-blastdbcmd -db ${DB_NAME} -info
-
-echo "NR BLAST database successfully built."
-echo "Job finished at $(date)"
+```bash
+echo "Total variants:"
+grep -vc "^#" private_snps.snpeff.vcf
+#counts all lines that are not do not start (^) with '#'.
 ```
 
-Great work! :)
+All 799 snps were successfully annotated! Nice. 
+
+This script will help with our annotation summary: 
+
+```bash
+cd /scratch/users/kaiku/snpEff/prus_analysis
+
+# Extract HIGH-impact variants
+grep "^#" private_snps.snpeff.vcf > private_snps.HIGH.vcf
+
+grep -v "^#" private_snps.snpeff.vcf \
+  | awk '$8 ~ /HIGH/' \
+  >> private_snps.HIGH.vcf
+
+# Extract HIGH + MODERATE variants
+grep "^#" private_snps.snpeff.vcf > private_snps.HIGH_MODERATE.vcf
+
+grep -v "^#" private_snps.snpeff.vcf \
+  | awk '$8 ~ /HIGH|MODERATE/' \
+  >> private_snps.HIGH_MODERATE.vcf
+
+# Create HIGH main-annotation table
+grep -v "^#" private_snps.HIGH.vcf \
+  | awk 'BEGIN {
+      FS=OFS="\t"
+      print "CHROM","POS","ID","REF","ALT","QUAL","EFFECT","IMPACT",
+            "GENE_NAME","GENE_ID","TRANSCRIPT_ID","HGVS_C","HGVS_P"
+    }
+    {
+      ann=$8
+      sub(/^.*ANN=/,"",ann)
+      sub(/;.*/,"",ann)
+      split(ann,a,",")
+      split(a[1],f,"|")
+
+      print $1,$2,$3,$4,$5,$6,
+            f[2],f[3],f[4],f[5],f[7],f[10],f[11]
+    }' \
+  > private_snps.HIGH.main_annotation.tsv
+
+# Create HIGH + MODERATE main-annotation table
+grep -v "^#" private_snps.HIGH_MODERATE.vcf \
+  | awk 'BEGIN {
+      FS=OFS="\t"
+      print "CHROM","POS","ID","REF","ALT","QUAL","EFFECT","IMPACT",
+            "GENE_NAME","GENE_ID","TRANSCRIPT_ID","HGVS_C","HGVS_P"
+    }
+    {
+      ann=$8
+      sub(/^.*ANN=/,"",ann)
+      sub(/;.*/,"",ann)
+      split(ann,a,",")
+      split(a[1],f,"|")
+
+      print $1,$2,$3,$4,$5,$6,
+            f[2],f[3],f[4],f[5],f[7],f[10],f[11]
+    }' \
+  > private_snps.HIGH_MODERATE.main_annotation.tsv
+
+# Create expanded table containing every annotation
+grep -v "^#" private_snps.HIGH_MODERATE.vcf \
+  | awk 'BEGIN {
+      FS=OFS="\t"
+      print "CHROM","POS","ID","REF","ALT","QUAL","EFFECT","IMPACT",
+            "GENE_NAME","GENE_ID","TRANSCRIPT_ID","HGVS_C","HGVS_P"
+    }
+    {
+      ann=$8
+      sub(/^.*ANN=/,"",ann)
+      sub(/;.*/,"",ann)
+      n=split(ann,a,",")
+
+      for (i=1; i<=n; i++) {
+        split(a[i],f,"|")
+
+        print $1,$2,$3,$4,$5,$6,
+              f[2],f[3],f[4],f[5],f[7],f[10],f[11]
+      }
+    }' \
+  > private_snps.HIGH_MODERATE.all_annotations.tsv
+
+# Create unique gene-ID lists
+cut -f10 private_snps.HIGH.main_annotation.tsv \
+  | tail -n +2 \
+  | grep -v "^$" \
+  | sort -u \
+  > private_snps.HIGH.gene_ids.txt
+
+cut -f10 private_snps.HIGH_MODERATE.main_annotation.tsv \
+  | tail -n +2 \
+  | grep -v "^$" \
+  | sort -u \
+  > private_snps.HIGH_MODERATE.gene_ids.txt
+
+# Write all results into one readable text file
+{
+  echo "SnpEff PRIVATE-SNP RESULTS"
+  echo "=========================="
+  echo
+
+  echo "TOTAL VARIANTS"
+  echo "--------------"
+  grep -vc "^#" private_snps.snpeff.vcf
+  echo
+
+  echo "VARIANTS WITH ANN ANNOTATIONS"
+  echo "-----------------------------"
+  grep -v "^#" private_snps.snpeff.vcf | grep -c "ANN="
+  echo
+
+  echo "PRIMARY EFFECT PER SNP"
+  echo "----------------------"
+  grep -v "^#" private_snps.snpeff.vcf \
+    | grep -o "ANN=[^;]*" \
+    | cut -d"|" -f2 \
+    | sort \
+    | uniq -c \
+    | sort -nr
+  echo
+
+  echo "PRIMARY IMPACT PER SNP"
+  echo "----------------------"
+  grep -v "^#" private_snps.snpeff.vcf \
+    | grep -o "ANN=[^;]*" \
+    | cut -d"|" -f3 \
+    | sort \
+    | uniq -c \
+    | sort -nr
+  echo
+
+  echo "ALL ANNOTATION EFFECTS"
+  echo "----------------------"
+  grep -v "^#" private_snps.snpeff.vcf \
+    | grep -o "ANN=[^;]*" \
+    | sed 's/^ANN=//' \
+    | tr ',' '\n' \
+    | cut -d"|" -f2 \
+    | sort \
+    | uniq -c \
+    | sort -nr
+  echo
+
+  echo "ALL ANNOTATION IMPACTS"
+  echo "----------------------"
+  grep -v "^#" private_snps.snpeff.vcf \
+    | grep -o "ANN=[^;]*" \
+    | sed 's/^ANN=//' \
+    | tr ',' '\n' \
+    | cut -d"|" -f3 \
+    | sort \
+    | uniq -c \
+    | sort -nr
+  echo
+
+  echo "NUMBER OF HIGH-IMPACT VARIANTS"
+  echo "------------------------------"
+  grep -vc "^#" private_snps.HIGH.vcf
+  echo
+
+  echo "NUMBER OF HIGH + MODERATE VARIANTS"
+  echo "----------------------------------"
+  grep -vc "^#" private_snps.HIGH_MODERATE.vcf
+  echo
+
+  echo "NUMBER OF UNIQUE HIGH-IMPACT GENES"
+  echo "----------------------------------"
+  wc -l < private_snps.HIGH.gene_ids.txt
+  echo
+
+  echo "NUMBER OF UNIQUE HIGH + MODERATE GENES"
+  echo "--------------------------------------"
+  wc -l < private_snps.HIGH_MODERATE.gene_ids.txt
+  echo
+
+  echo "HIGH-IMPACT VARIANT TABLE"
+  echo "-------------------------"
+  column -t private_snps.HIGH.main_annotation.tsv
+  echo
+
+  echo "OUTPUT FILES CREATED"
+  echo "--------------------"
+  echo "private_snps.HIGH.vcf"
+  echo "private_snps.HIGH_MODERATE.vcf"
+  echo "private_snps.HIGH.main_annotation.tsv"
+  echo "private_snps.HIGH_MODERATE.main_annotation.tsv"
+  echo "private_snps.HIGH_MODERATE.all_annotations.tsv"
+  echo "private_snps.HIGH.gene_ids.txt"
+  echo "private_snps.HIGH_MODERATE.gene_ids.txt"
+
+} > private_snps.snpeff.summary.txt
+
+echo "Finished. Read the report with:"
+echo "cat private_snps.snpeff.summary.txt"
+```
+
+```bash
+cat private_snps.snpeff.summary.txt
+
+SnpEff PRIVATE-SNP RESULTS
+==========================
+
+Total variants:
+799
+
+Variants with ANN annotations:
+799
+
+PRIMARY EFFECT PER SNP:
+    300 upstream_gene_variant
+    219 intron_variant
+    135 downstream_gene_variant
+     62 missense_variant
+     30 intergenic_region
+     29 synonymous_variant
+      9 3_prime_UTR_variant
+      4 stop_gained
+      4 splice_region_variant&intron_variant
+      2 splice_donor_variant&intron_variant
+      2 missense_variant&splice_region_variant
+      2 5_prime_UTR_variant
+      1 5_prime_UTR_premature_start_codon_gain_variant
+
+PRIMARY IMPACT PER SNP:
+    695 MODIFIER
+     64 MODERATE
+     34 LOW
+      6 HIGH
+
+ALL ANNOTATION EFFECTS:
+    466 downstream_gene_variant
+    455 upstream_gene_variant
+    428 intron_variant
+    283 intergenic_region
+     62 missense_variant
+     30 synonymous_variant
+      9 3_prime_UTR_variant
+      4 stop_gained
+      4 splice_region_variant&intron_variant
+      3 5_prime_UTR_variant
+      2 splice_donor_variant&intron_variant
+      2 missense_variant&splice_region_variant
+      1 5_prime_UTR_premature_start_codon_gain_variant
+
+ALL ANNOTATION IMPACTS:
+   1644 MODIFIER
+     64 MODERATE
+     35 LOW
+      6 HIGH
+
+HIGH-impact variants:
+6
+
+HIGH + MODERATE variants:
+70
+
+Unique HIGH-impact genes:
+6
+
+Unique HIGH + MODERATE genes:
+69
+```
