@@ -5,7 +5,7 @@ evaluate outlier snps associated with our first two principle components from ou
 
 We also learned that minor allele frequencies can identify hidden trends in human population structure, and can be extremely useful for our analysis given our fine spatial scale (< 40km) and our highly-related, mostly panmictic population. The minor allele frequency pca  identified that there is a clear subgroup among our thermal individuals, to which we grouped together based on a PC1 threshold.  The alleles of this subgroup (n_indiv = 19; total_possible_alleles = 38), were then filtered for private alleles at high frequency. This represents alelles that are not present in the greater population, display a frequency of > 20%, and have a total mimimum allele count of 8. In the end we idenitfied 799 alleles at high frequency not present in the main population. 
 
-<img width="750" height="525" alt="mac2_maf005_ld" src="https://github.com/user-attachments/assets/ad48d023-17e3-41ab-b02b-df37e65ad943" />
+<img width="375" height="262.5" alt="mac2_maf005_ld" src="https://github.com/user-attachments/assets/ad48d023-17e3-41ab-b02b-df37e65ad943" />
 
 Fig 1: PCA of Rare Alleles (MAC > 1; MAF <= 0.05). Upper left quadrant became the subgroup that was compared with the rest of the population. Subgroup contained 799 alleles at high frequency not present in the main population. 
 
