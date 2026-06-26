@@ -135,24 +135,24 @@ For which we can number our new lines using:
 Awesome, this is complete! As a reminder, snpEff usually follows the following format:
 
 ```bash
-1   Allele
+1   Allele #alt allele being annotated
 2   Effect #biological consequence, like missense or stop_gain_variant
 3   Impact #predicted impact based the biological consequence (high impact, moderate, low, etc.)
 4   Gene name #name of the associated gene from the database
 5   Gene ID #unique gene ID that will be used for the functional annotation
-6   Feature type #gene, cds, intron, etc. Since maker2 predicted based on transcripts, most would be transcripts. 
-7   Transcript ID
-8   Transcript biotype
-9   Exon/intron rank
-10  HGVS.c
-11  HGVS.p
-12  cDNA position/length
-13  CDS position/length
-14  Protein position/length
-15  Distance
-16  Warnings/errors
+6   Feature type #transcript, gene, cds, intron, etc. Since maker2 predicted based on transcripts, most would be transcripts. 
+7   Transcript ID #id for connecting transcipt id to blast results
+8   Transcript biotype #class of transcript. ex: trna, mirna, rrna or protein_coding. 
+9   Exon/intron rank #exon1 = first exon; intron 1 = first intron; intron5 = 5th intron and is between exon 4 and 5. 
+10  HGVS.c #human genome variation soc nomenclature, coding region pos. ex: c.1964C>G = at pos 1964 C turns to G
+11  HGVS.p #HGVS nomenclature, protein pos. ex: p.Ser1002* = AA change of Serine to stop codon at AA 1002. 
+12  cDNA position/length #position along cDNA transcript. ex: 1803 (pos) /2877 (total cDNA length)
+13  CDS position/length #position along CDS. ex: 1694 (pos) / 2631 (total cds length) 
+14  Protein position/length #position along AA string (protein). ex: 565 (AA) / 876 (total AA length)
+15  Distance #from gene feature (gene, cds, etc.), usually used for up/downstream variants. ex: 1808 = bp up/downstream. 
+16  Warnings/errors # transcript specific warning. ex: WARNING_NO_START_CODON, WARNING_TRANSCRIPT_MULTIPLE_STOP_CODONS
 ```
-Usually, we care about fields 1-6ish. 
+Usually, we care about fields 2, 3, 5, 7, 10, 11, 14, 16
 
 Cool! 
 
