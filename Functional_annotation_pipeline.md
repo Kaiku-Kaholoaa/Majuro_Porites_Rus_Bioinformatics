@@ -715,6 +715,26 @@ proteins_with_pathway_annotations	     27,554
 no_interpro_hits  (92944 - 54226) =    38,718
 ```
 
+Remember the fields of the IPR output: 
+
+```
+1. Protein_accession          # your query protein/transcript ID
+2. Sequence_MD5_digest        # checksum/fingerprint of protein sequence
+3. Sequence_length            # protein length in amino acids
+4. Analysis                   # source database, e.g. Pfam, SMART, CDD
+5. Signature_accession        # domain/family accession from that database
+6. Signature_description      # domain/family description
+7. Start                      # domain hit start position in protein
+8. End                        # domain hit end position in protein
+9. Score                      # e-value or match score
+10. Status                    # usually T = true/accepted match
+11. Date                      # InterProScan run/date stamp
+12. InterPro_accession        # integrated InterPro ID, or -
+13. InterPro_description      # integrated InterPro description, or -
+14. GO_annotations            # GO terms, if present
+15. Pathway_annotations       # pathway terms, if present
+```
+
 Nice! Also convert to gff and tsv so that we can run statistics with agat:
 
 `cat interproscan_xml2gff.sbatch`
