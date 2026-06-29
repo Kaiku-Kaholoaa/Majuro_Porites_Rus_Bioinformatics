@@ -1,5 +1,6 @@
-Summary stats for our snpEff output: top_5_pct_output.snpEff.vcf
+# Summary stats for our snpEff output: top_5_pct_output.snpEff.vcf
 
+```bash
 cd /scratch/users/kaiku/snpEff/prus_analysis/top5_pct_gemma
 
 INPUT_VCF="top_5_pct_output.snpEff.vcf"
@@ -285,4 +286,100 @@ cut -f11 ${PREFIX}.HIGH_MODERATE.annotations_only.tsv \
 } > ${PREFIX}.snpeff.summary.txt
 
 echo "Finished. Read the report with:"
-echo "cat ${PREFIX}.snpeff.summary.txt"
+echo "cat ${PREFIX}.snpeff.summary.txt" ```
+
+SnpEff GEMMA TOP 5% EXPERIENCED RESULTS
+=======================================
+
+INPUT VCF
+---------
+top_5_pct_output.snpEff.vcf
+
+TOTAL VARIANTS
+--------------
+17
+
+VARIANTS WITH ANN ANNOTATIONS
+-----------------------------
+17
+
+PRIMARY EFFECT PER SNP
+----------------------
+     12 upstream_gene_variant
+      3 intron_variant
+      1 synonymous_variant
+      1 intergenic_region
+
+PRIMARY IMPACT PER SNP
+----------------------
+     16 MODIFIER
+      1 LOW
+
+ALL ANNOTATION EFFECTS
+----------------------
+     13 intergenic_region
+     12 upstream_gene_variant
+      3 intron_variant
+      1 synonymous_variant
+      1 downstream_gene_variant
+
+ALL ANNOTATION IMPACTS
+----------------------
+     29 MODIFIER
+      1 LOW
+
+NUMBER OF VARIANT SITES WITH AT LEAST ONE HIGH ANNOTATION
+---------------------------------------------------------
+0
+
+NUMBER OF VARIANT SITES WITH AT LEAST ONE HIGH OR MODERATE ANNOTATION
+---------------------------------------------------------------------
+0
+
+NUMBER OF HIGH ANNOTATION RECORDS
+---------------------------------
+0
+
+NUMBER OF HIGH + MODERATE ANNOTATION RECORDS
+--------------------------------------------
+0
+
+HIGH/MODERATE IMPACT COUNTS FROM CORRECTED ANNOTATION TABLE
+-----------------------------------------------------------
+      1 IMPACT
+
+HIGH/MODERATE EFFECT COUNTS FROM CORRECTED ANNOTATION TABLE
+-----------------------------------------------------------
+
+NUMBER OF UNIQUE HIGH-IMPACT GENES
+----------------------------------
+0
+
+NUMBER OF UNIQUE HIGH-IMPACT TRANSCRIPTS
+----------------------------------------
+0
+
+NUMBER OF UNIQUE HIGH + MODERATE GENES
+--------------------------------------
+0
+
+NUMBER OF UNIQUE HIGH + MODERATE TRANSCRIPTS
+--------------------------------------------
+0
+
+HIGH-IMPACT ANNOTATION TABLE
+----------------------------
+CHROM  POS  ID  REF  ALT  QUAL  EFFECT  IMPACT  GENE_NAME  GENE_ID  TRANSCRIPT_ID  HGVS_C  HGVS_P
+
+OUTPUT FILES CREATED
+--------------------
+top5_pct_exp_gemma.HIGH.vcf
+top5_pct_exp_gemma.HIGH_MODERATE.vcf
+top5_pct_exp_gemma.HIGH.annotations_only.tsv
+top5_pct_exp_gemma.HIGH_MODERATE.annotations_only.tsv
+top5_pct_exp_gemma.HIGH_MODERATE.all_annotations_for_sites.tsv
+top5_pct_exp_gemma.HIGH.gene_ids.txt
+top5_pct_exp_gemma.HIGH.transcript_ids.txt
+top5_pct_exp_gemma.HIGH_MODERATE.gene_ids.txt
+top5_pct_exp_gemma.HIGH_MODERATE.transcript_ids.txt
+
