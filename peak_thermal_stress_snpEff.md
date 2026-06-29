@@ -286,7 +286,8 @@ cut -f11 ${PREFIX}.HIGH_MODERATE.annotations_only.tsv \
 } > ${PREFIX}.snpeff.summary.txt
 
 echo "Finished. Read the report with:"
-echo "cat ${PREFIX}.snpeff.summary.txt" ```
+echo "cat ${PREFIX}.snpeff.summary.txt"
+```
 
 SnpEff GEMMA TOP 5% EXPERIENCED RESULTS
 =======================================
