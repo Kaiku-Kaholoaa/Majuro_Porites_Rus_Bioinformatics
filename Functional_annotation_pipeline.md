@@ -95,7 +95,7 @@ Double check if the 'faSomeRecords' script is loaded as a command:
 
 Perfect! I then ran the -exclude command to exclude the blasted Gene Models from the .faa file
 
-```faSomeRecords -exclude no_mpi_round3.2.all.maker.proteins.busco.fasta list_of_Pastgenemodelproteins_sprot.txt Past_proteins_names_v1.0.faa.prot4trembl ```
+```bash faSomeRecords -exclude no_mpi_round3.2.all.maker.proteins.busco.fasta list_of_Pastgenemodelproteins_sprot.txt Past_proteins_names_v1.0.faa.prot4trembl ```
 
 
 Checking to make sure it worked: 
