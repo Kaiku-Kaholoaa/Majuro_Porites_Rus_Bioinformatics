@@ -14,3 +14,11 @@ We generated different genomic datasets across different MAF thresholds includin
 A PCA for each dataset was created, and we evaluated the presence of population structure via the overlap of 95% confident ellipses. Here we find evidence of population structure with limited MAF filtering that decreases as filtering increases (top left -> top right), and the absence of structure with standard MAF filtering thresholds (bottom).
 
 <img width="6000" height="3600" alt="combined_ld_plots" src="https://github.com/user-attachments/assets/3ab180d0-bf68-475c-bf51-bc522894a312" />
+
+Additonally, side-by-side comparisons between unpruned (left) and pruned (right) datasets shows that **No MAF Filtering is robust to LD-pruning** while Standard Filtering is less so. 
+
+<img width="6000" height="6000" alt="standard_combined_minor_allele_pca_4panel" src="https://github.com/user-attachments/assets/da5ff5df-231a-4af1-bedd-802e37008c89" />
+
+This holds true with the Rare Allele dataset (where only alleles at less than 5% frequency were kept), however we do report that allele counts alone (MAC 2-5) is **susceptible** to LD pruning differences, possibly reflecting highly related individuals that share many quintupletons specific to their familial group (unvalidated).
+
+<img width="4800" height="3600" alt="combined_minor_allele_pca_4panel" src="https://github.com/user-attachments/assets/9d2d187e-543c-45ef-adc8-38490e0e48f1" />
