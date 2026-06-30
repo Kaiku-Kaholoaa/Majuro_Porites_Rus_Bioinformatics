@@ -7,8 +7,10 @@ We used plink/2.0a7 to filter and evaluate the effects of different MAF filterin
   1) Removal of standard MAF thresholds *and* singletons **reveals hidden population structure** associated with warm thermal environments, and
   2) Standard filtering PCA results are **susceptible** to Linkage Disquilibrium (LD), while **Rare Allele PCA results** (with removed or a limited MAF threshold) are **robust** to LD. 
 
-## Methods ##
+## Separation of datasets by MAF threshold and LD-pruning  ##
 
-We generated different genomic datasets across different MAF thresholds including: No Minor Allele Filtering (no MAF), Minor Allele Counts 2-5 (MAC 2-5; doubletons - quintupletons), Rare Alleles (MAF < 0.05), Standard Filtering at 5% (MAF > 0.05), and Standard Filtering at 10% (MAF > 0.10). For each dataset we also created thier LD pruned counterpart, to evaluate differences in structure between pruned (LD) and unpruned datasets. Singletons (MAC = 1) were excluded from all analyses. 
+We generated different genomic datasets across different MAF thresholds including: No Minor Allele Filtering (no MAF; all rare alleles are kept), Rare Alleles (MAF < 0.05; only rare alleles at frequency less than 5% are kept), Minor Allele Counts 2-5 (MAC 2-5 [doubletons - quintupletons]; very rare alleles at frequency less than 2%), Standard Filtering at 5% (MAF > 0.05; some rare alleles filtered), and Standard Filtering at 10% (MAF > 0.10; all rare alleles filtered). For each dataset we also created thier LD pruned counterpart, to evaluate differences in structure between pruned (LD) and unpruned datasets. Singletons (MAC = 1) were excluded from all analyses. 
 
-A PCA for each dataset was created, and we evaluated the presence of population structure via the overlap of 95% confident ellipses. 
+A PCA for each dataset was created, and we evaluated the presence of population structure via the overlap of 95% confident ellipses. Here we find evidence of population structure with limited MAF filtering that decreases as filtering increases (top left -> top right), and the absence of structure with standard MAF filtering thresholds (bottom).
+
+<img width="6000" height="3600" alt="combined_ld_plots" src="https://github.com/user-attachments/assets/3ab180d0-bf68-475c-bf51-bc522894a312" />
