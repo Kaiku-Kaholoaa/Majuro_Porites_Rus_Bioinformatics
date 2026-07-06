@@ -248,7 +248,7 @@ cut -f10 major_allele_differences_NSNMU.HIGH_MODERATE.all_annotations.tsv \
 
   echo "NUMBER OF UNIQUE HIGH + MODERATE GENES"
   echo "--------------------------------------"
-  wc -l < pmajor_allele_differences_NSNMU.HIGH_MODERATE.gene_ids.txt
+  wc -l < major_allele_differences_NSNMU.HIGH_MODERATE.gene_ids.txt
   echo
 
   echo "HIGH-IMPACT VARIANT TABLE"
