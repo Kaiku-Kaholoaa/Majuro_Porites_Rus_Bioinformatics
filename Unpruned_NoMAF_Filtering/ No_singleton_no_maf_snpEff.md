@@ -329,13 +329,23 @@ ALL ANNOTATION IMPACTS
      69 LOW
       8 HIGH
 
-NUMBER OF HIGH-IMPACT VARIANTS
+NUMBER OF HIGH-IMPACT VARIANTS (splice_donor_variant&intron_variant, splice_region_variant&synonymous_variant
 ------------------------------
 32
 
-NUMBER OF HIGH + MODERATE VARIANTS
+Breakdown:
+      4 splice_donor_variant&intron_variant
+      2 splice_acceptor_variant&intron_variant
+      1 stop_gained&splice_region_variant
+      1 stop_gained
+
+NUMBER OF HIGH + MODERATE VARIANTS (missense_variant; missense_variant&splice_region_variant)
 ----------------------------------
 79
+
+Breakdown:
+     66 missense_variant
+      5 missense_variant&splice_region_variant
 
 NUMBER OF UNIQUE HIGH-IMPACT GENES
 ----------------------------------
@@ -348,9 +358,10 @@ NUMBER OF UNIQUE HIGH + MODERATE GENES
 
 
 ### Preliminary High Impact Variants:
-Okay, all the high-impact variants are on Chr12 and span one 71,637 base region from pos 23046067 - 22974430.
+Okay, all the high-impact variants are on Chr12 and span one 71,637 base region from pos 22974430 - 23046067.
 In this region we identify 5 unique genes with these high-impact variants.
 
 ### Preliminary High & Medium Impact Variants:
-Okay, all the high-impact variants are on Chr12 and span one 71,637 base region from pos 23046067 - 22974430.
-In this region we identify 5 unique genes with these high-impact variants.
+When we add moderate-impact variants (mostly missense mutations) to the previous dataset, we identify that 63 of the 79 moderate variants (~80%) also span the same chr 12 region (now 80,127 bases) from pos 22970102 - 23050229. This to me means that many of these high and moderate impact variants are somewhat localized, and could potentially be a haplotype block that does not get separated during recombination. The other moderate variants are found on Chromosomes 2,4,6, and 8. Its interesting that they're all on even numbered chromosomes, but I'm not sure if this is due to a biological reason or just by coincidence. 
+
+Additionally, there are now 26 unique genes with the moderate variants included.
