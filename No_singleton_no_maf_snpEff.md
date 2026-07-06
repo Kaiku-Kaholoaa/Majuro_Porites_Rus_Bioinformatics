@@ -266,68 +266,82 @@ echo "cat major_allele_differences_NSNMU.snpeff.summary.txt"
 ## Summary Results 
 
 ```bash
-cat private_snps.snpeff.summary.txt
-
+cat major_allele_differences_NSNMU.snpeff.summary.txt
 SnpEff PRIVATE-SNP RESULTS
 ==========================
 
-Total variants:
-799
+TOTAL VARIANTS
+--------------
+1039
 
-Variants with ANN annotations:
-799
+VARIANTS WITH ANN ANNOTATIONS
+-----------------------------
+1039
 
-PRIMARY EFFECT PER SNP:
-    300 upstream_gene_variant
-    219 intron_variant
-    135 downstream_gene_variant
-     62 missense_variant
-     30 intergenic_region
-     29 synonymous_variant
-      9 3_prime_UTR_variant
-      4 stop_gained
-      4 splice_region_variant&intron_variant
-      2 splice_donor_variant&intron_variant
-      2 missense_variant&splice_region_variant
-      2 5_prime_UTR_variant
-      1 5_prime_UTR_premature_start_codon_gain_variant
+PRIMARY EFFECT PER SNP
+----------------------
+    367 upstream_gene_variant
+    318 intron_variant
+    176 downstream_gene_variant
+     66 missense_variant
+     51 synonymous_variant
+     24 3_prime_UTR_variant
+     13 splice_region_variant&intron_variant
+      6 5_prime_UTR_variant
+      5 missense_variant&splice_region_variant
+      4 splice_donor_variant&intron_variant
+      3 5_prime_UTR_premature_start_codon_gain_variant
+      2 splice_region_variant&synonymous_variant
+      2 splice_acceptor_variant&intron_variant
+      1 stop_gained&splice_region_variant
+      1 stop_gained
 
-PRIMARY IMPACT PER SNP:
-    695 MODIFIER
-     64 MODERATE
-     34 LOW
-      6 HIGH
+PRIMARY IMPACT PER SNP
+----------------------
+    891 MODIFIER
+     71 MODERATE
+     69 LOW
+      8 HIGH
 
-ALL ANNOTATION EFFECTS:
-    466 downstream_gene_variant
-    455 upstream_gene_variant
-    428 intron_variant
-    283 intergenic_region
-     62 missense_variant
-     30 synonymous_variant
-      9 3_prime_UTR_variant
-      4 stop_gained
-      4 splice_region_variant&intron_variant
-      3 5_prime_UTR_variant
-      2 splice_donor_variant&intron_variant
-      2 missense_variant&splice_region_variant
-      1 5_prime_UTR_premature_start_codon_gain_variant
+ALL ANNOTATION EFFECTS
+----------------------
+    700 intron_variant
+    666 downstream_gene_variant
+    608 upstream_gene_variant
+    172 intergenic_region
+     66 missense_variant
+     51 synonymous_variant
+     24 3_prime_UTR_variant
+     13 splice_region_variant&intron_variant
+      9 5_prime_UTR_variant
+      5 missense_variant&splice_region_variant
+      4 splice_donor_variant&intron_variant
+      3 5_prime_UTR_premature_start_codon_gain_variant
+      2 splice_region_variant&synonymous_variant
+      2 splice_acceptor_variant&intron_variant
+      1 stop_gained&splice_region_variant
+      1 stop_gained
 
-ALL ANNOTATION IMPACTS:
-   1644 MODIFIER
-     64 MODERATE
-     35 LOW
-      6 HIGH
+ALL ANNOTATION IMPACTS
+----------------------
+   2179 MODIFIER
+     71 MODERATE
+     69 LOW
+      8 HIGH
 
-HIGH-impact variants:
-6
+NUMBER OF HIGH-IMPACT VARIANTS
+------------------------------
+32
 
-HIGH + MODERATE variants:
-70
+NUMBER OF HIGH + MODERATE VARIANTS
+----------------------------------
+79
 
-Unique HIGH-impact genes:
-6
+NUMBER OF UNIQUE HIGH-IMPACT GENES
+----------------------------------
+5
 
-Unique HIGH + MODERATE genes:
-69
+NUMBER OF UNIQUE HIGH + MODERATE GENES
+--------------------------------------
+26
 ```
