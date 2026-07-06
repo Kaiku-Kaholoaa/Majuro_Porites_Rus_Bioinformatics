@@ -83,7 +83,6 @@ Cool!
 ## This script will help with our annotation summary: 
 
 ```bash
-cd /scratch/users/kaiku/snpEff/prus_analysis
 
 # Extract HIGH-impact variants
 grep "^#" major_allele_differences_no_singletons_no_maf_unpruned.snpeff.vcf  > major_allele_differences_NSNMU.snpeff.HIGH.vcf
