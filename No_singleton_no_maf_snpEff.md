@@ -2,8 +2,11 @@
 Using the unpruned no MAF filtering dataset, we created three different datasets for evaluation, upon which we find:
 
   1. (Priority) ~1,000 alleles at low frequency (less than 10%) in the main population, that are at high frequency (greater than 80%) in the thermally-associated subpopulation, 
-  2. (Also very interesting) ~4,000 private alleles (not present in the main population) that are at a frequency of greater than 20%
-  3. (Non-priority, but worth exploring) ~400 alleles that are fixed in the subpopulation, and have a 20% increase in AF relative to the main population,
+  2. (Also very interesting) ~4,000 private alleles (not present in the main population) that are at a frequency of greater than 20%,
+  3. (Non-priority, but worth exploring) ~400 alleles that are fixed in the subpopulation, and have a 20% increase in AF relative to the main population.
+
+PCA: 
+<img width="3000" height="2100" alt="mac2_no_maf_unpruned" src="https://github.com/user-attachments/assets/0e0859fc-4b25-498e-b8f3-e512dae2e910" />
 
 ## Annotations and Summary Statistics
 
