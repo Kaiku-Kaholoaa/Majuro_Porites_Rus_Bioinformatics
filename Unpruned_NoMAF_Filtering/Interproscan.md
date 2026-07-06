@@ -1,3 +1,5 @@
+To evaluate gene functions, we will first gather the transcript_ids from snpEff.
+
 ```bash
 cut -f11 major_allele_differences_NSNMU.HIGH_MODERATE.all_annotations.tsv \
   | tail -n +2 \
@@ -9,7 +11,7 @@ wc -l major_allele_differences_NSNMU.HIGH_MODERATE.transcript_ids.txt
 head major_allele_differences_NSNMU.HIGH_MODERATE.transcript_ids.txt
 ```
 
-pull interproscan ids
+Then we'll pull interproscan ids using the transcript ids from snpEFF
 ```
 PROTEINS="/scratch/users/kaiku/may18_26_pipeline/transcriptomics/dec25_maker2_mpi/functional_annotation/no_mpi_round3.2.all.maker.proteins.fasta"
 
