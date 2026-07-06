@@ -35,7 +35,7 @@ grep -vc "^#" major_allele_differences_no_singletons_no_maf_unpruned.snpeff.vcf
 #counts all lines that are not do not start (^) with '#'.
 ```
 
-All 799 snps were successfully annotated! Nice. 
+All 1039 snps were successfully annotated! Nice. 
 
 As a reminder, the output is a vcf so that means that column 8 contains the annotations. 
 
