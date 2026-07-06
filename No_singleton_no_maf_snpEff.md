@@ -94,7 +94,7 @@ grep -v "^#" major_allele_differences_no_singletons_no_maf_unpruned.snpeff.vcf  
 # Extract HIGH + MODERATE variants
 grep "^#" major_allele_differences_no_singletons_no_maf_unpruned.snpeff.vcf > major_allele_differences_NSNMU.HIGH_MODERATE.vcf
 
-grep -v "^#" private_snps.snpeff.vcf \
+grep -v "^#" major_allele_differences_no_singletons_no_maf_unpruned.snpeff.vcf \
   | awk '$8 ~ /HIGH|MODERATE/' \
   >> major_allele_differences_NSNMU.HIGH_MODERATE.vcf
 
