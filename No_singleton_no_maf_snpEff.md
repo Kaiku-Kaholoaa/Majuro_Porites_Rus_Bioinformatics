@@ -28,7 +28,7 @@ And we can count the number of successful annotations:
 
 ```bash
 echo "Total variants:"
-grep -vc "^#" private_snps.snpeff.vcf
+grep -vc "^#" major_allele_differences_no_singletons_no_maf_unpruned.snpeff.vcf 
 #counts all lines that are not do not start (^) with '#'.
 ```
 
@@ -83,21 +83,21 @@ Cool!
 cd /scratch/users/kaiku/snpEff/prus_analysis
 
 # Extract HIGH-impact variants
-grep "^#" private_snps.snpeff.vcf > private_snps.HIGH.vcf
+grep "^#" major_allele_differences_no_singletons_no_maf_unpruned.snpeff.vcf  > major_allele_differences_NSNMU.snpeff.HIGH.vcf
 
-grep -v "^#" private_snps.snpeff.vcf \
+grep -v "^#" major_allele_differences_no_singletons_no_maf_unpruned.snpeff.vcf  \
   | awk '$8 ~ /HIGH/' \
-  >> private_snps.HIGH.vcf
+  >> major_allele_differences_NSNMU.HIGH.vcf
 
 # Extract HIGH + MODERATE variants
-grep "^#" private_snps.snpeff.vcf > private_snps.HIGH_MODERATE.vcf
+grep "^#" major_allele_differences_no_singletons_no_maf_unpruned.snpeff.vcf > major_allele_differences_NSNMU.HIGH_MODERATE.vcf
 
 grep -v "^#" private_snps.snpeff.vcf \
   | awk '$8 ~ /HIGH|MODERATE/' \
-  >> private_snps.HIGH_MODERATE.vcf
+  >> major_allele_differences_NSNMU.HIGH_MODERATE.vcf
 
 # Create HIGH main-annotation table
-grep -v "^#" private_snps.HIGH.vcf \
+grep -v "^#" major_allele_differences_NSNMU.HIGH.vcf \
   | awk 'BEGIN {
       FS=OFS="\t"
       print "CHROM","POS","ID","REF","ALT","QUAL","EFFECT","IMPACT",
@@ -113,10 +113,10 @@ grep -v "^#" private_snps.HIGH.vcf \
       print $1,$2,$3,$4,$5,$6,
             f[2],f[3],f[4],f[5],f[7],f[10],f[11]
     }' \
-  > private_snps.HIGH.main_annotation.tsv
+  > major_allele_differences_NSNMU.HIGH.main_annotation.tsv
 
 # Create HIGH + MODERATE main-annotation table
-grep -v "^#" private_snps.HIGH_MODERATE.vcf \
+grep -v "^#" major_allele_differences_NSNMU.HIGH_MODERATE.vcf \
   | awk 'BEGIN {
       FS=OFS="\t"
       print "CHROM","POS","ID","REF","ALT","QUAL","EFFECT","IMPACT",
@@ -132,10 +132,10 @@ grep -v "^#" private_snps.HIGH_MODERATE.vcf \
       print $1,$2,$3,$4,$5,$6,
             f[2],f[3],f[4],f[5],f[7],f[10],f[11]
     }' \
-  > private_snps.HIGH_MODERATE.main_annotation.tsv
+  > major_allele_differences_NSNMU.HIGH_MODERATE.main_annotation.tsv
 
 # Create expanded table containing every annotation
-grep -v "^#" private_snps.HIGH_MODERATE.vcf \
+grep -v "^#" major_allele_differences_NSNMU.HIGH_MODERATE.vcf \
   | awk 'BEGIN {
       FS=OFS="\t"
       print "CHROM","POS","ID","REF","ALT","QUAL","EFFECT","IMPACT",
@@ -154,20 +154,20 @@ grep -v "^#" private_snps.HIGH_MODERATE.vcf \
               f[2],f[3],f[4],f[5],f[7],f[10],f[11]
       }
     }' \
-  > private_snps.HIGH_MODERATE.all_annotations.tsv
+  > major_allele_differences_NSNMU.HIGH_MODERATE.all_annotations.tsv
 
 # Create unique gene-ID lists
-cut -f10 private_snps.HIGH.main_annotation.tsv \
+cut -f10 major_allele_differences_NSNMU.HIGH.main_annotation.tsv \
   | tail -n +2 \
   | grep -v "^$" \
   | sort -u \
-  > private_snps.HIGH.gene_ids.txt
+  > major_allele_differences_NSNMU.HIGH.gene_ids.txt
 
-cut -f10 private_snps.HIGH_MODERATE.main_annotation.tsv \
+cut -f10 major_allele_differences_NSNMU.HIGH_MODERATE.all_annotations.tsv \
   | tail -n +2 \
   | grep -v "^$" \
   | sort -u \
-  > private_snps.HIGH_MODERATE.gene_ids.txt
+  > major_allele_differences_NSNMU.HIGH_MODERATE.gene_ids.txt
 
 # Write all results into one readable text file
 {
@@ -177,17 +177,17 @@ cut -f10 private_snps.HIGH_MODERATE.main_annotation.tsv \
 
   echo "TOTAL VARIANTS"
   echo "--------------"
-  grep -vc "^#" private_snps.snpeff.vcf
+  grep -vc "^#" major_allele_differences_no_singletons_no_maf_unpruned.snpeff.vcf 
   echo
 
   echo "VARIANTS WITH ANN ANNOTATIONS"
   echo "-----------------------------"
-  grep -v "^#" private_snps.snpeff.vcf | grep -c "ANN="
+  grep -v "^#" major_allele_differences_no_singletons_no_maf_unpruned.snpeff.vcf  | grep -c "ANN="
   echo
 
   echo "PRIMARY EFFECT PER SNP"
   echo "----------------------"
-  grep -v "^#" private_snps.snpeff.vcf \
+  grep -v "^#" major_allele_differences_no_singletons_no_maf_unpruned.snpeff.vcf  \
     | grep -o "ANN=[^;]*" \
     | cut -d"|" -f2 \
     | sort \
@@ -197,7 +197,7 @@ cut -f10 private_snps.HIGH_MODERATE.main_annotation.tsv \
 
   echo "PRIMARY IMPACT PER SNP"
   echo "----------------------"
-  grep -v "^#" private_snps.snpeff.vcf \
+  grep -v "^#" major_allele_differences_no_singletons_no_maf_unpruned.snpeff.vcf  \
     | grep -o "ANN=[^;]*" \
     | cut -d"|" -f3 \
     | sort \
@@ -207,7 +207,7 @@ cut -f10 private_snps.HIGH_MODERATE.main_annotation.tsv \
 
   echo "ALL ANNOTATION EFFECTS"
   echo "----------------------"
-  grep -v "^#" private_snps.snpeff.vcf \
+  grep -v "^#" major_allele_differences_no_singletons_no_maf_unpruned.snpeff.vcf  \
     | grep -o "ANN=[^;]*" \
     | sed 's/^ANN=//' \
     | tr ',' '\n' \
@@ -219,7 +219,7 @@ cut -f10 private_snps.HIGH_MODERATE.main_annotation.tsv \
 
   echo "ALL ANNOTATION IMPACTS"
   echo "----------------------"
-  grep -v "^#" private_snps.snpeff.vcf \
+  grep -v "^#" major_allele_differences_no_singletons_no_maf_unpruned.snpeff.vcf  \
     | grep -o "ANN=[^;]*" \
     | sed 's/^ANN=//' \
     | tr ',' '\n' \
@@ -231,43 +231,35 @@ cut -f10 private_snps.HIGH_MODERATE.main_annotation.tsv \
 
   echo "NUMBER OF HIGH-IMPACT VARIANTS"
   echo "------------------------------"
-  grep -vc "^#" private_snps.HIGH.vcf
+  grep -vc "^#" major_allele_differences_NSNMU.HIGH.vcf
   echo
 
   echo "NUMBER OF HIGH + MODERATE VARIANTS"
   echo "----------------------------------"
-  grep -vc "^#" private_snps.HIGH_MODERATE.vcf
+  grep -vc "^#" major_allele_differences_NSNMU.HIGH_MODERATE.vcf
   echo
 
   echo "NUMBER OF UNIQUE HIGH-IMPACT GENES"
   echo "----------------------------------"
-  wc -l < private_snps.HIGH.gene_ids.txt
+  wc -l < major_allele_differences_NSNMU.HIGH.gene_ids.txt
   echo
 
   echo "NUMBER OF UNIQUE HIGH + MODERATE GENES"
   echo "--------------------------------------"
-  wc -l < private_snps.HIGH_MODERATE.gene_ids.txt
+  wc -l < pmajor_allele_differences_NSNMU.HIGH_MODERATE.gene_ids.txt
   echo
 
   echo "HIGH-IMPACT VARIANT TABLE"
   echo "-------------------------"
-  column -t private_snps.HIGH.main_annotation.tsv
+  column -t major_allele_differences_NSNMU.HIGH.main_annotation.tsv
   echo
 
   echo "OUTPUT FILES CREATED"
-  echo "--------------------"
-  echo "private_snps.HIGH.vcf"
-  echo "private_snps.HIGH_MODERATE.vcf"
-  echo "private_snps.HIGH.main_annotation.tsv"
-  echo "private_snps.HIGH_MODERATE.main_annotation.tsv"
-  echo "private_snps.HIGH_MODERATE.all_annotations.tsv"
-  echo "private_snps.HIGH.gene_ids.txt"
-  echo "private_snps.HIGH_MODERATE.gene_ids.txt"
 
-} > private_snps.snpeff.summary.txt
+} > major_allele_differences_NSNMU.snpeff.summary.txt
 
 echo "Finished. Read the report with:"
-echo "cat private_snps.snpeff.summary.txt"
+echo "cat major_allele_differences_NSNMU.snpeff.summary.txt"
 ```
 ## Summary Results 
 
