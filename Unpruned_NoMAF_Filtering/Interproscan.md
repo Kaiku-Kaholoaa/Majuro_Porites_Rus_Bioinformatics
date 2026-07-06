@@ -36,45 +36,41 @@ wc -l major_allele_differences_NSNMU.HIGH_MODERATE.interpro.tsv #147, nice!
 cut -f1 major_allele_differences_NSNMU.HIGH_MODERATE.interpro.tsv | sort -u | wc -l
 #19 unique genes. Interesting, 7 genes are not well known apparently. 
 cut -f1 major_allele_differences_NSNMU.HIGH_MODERATE.interpro.tsv | sort -u | grep -c "38003"
-#10 unique genes. Wow, 10 of our genes are within this interesting chr 12 region. 
+#10 unique genes.
 
+#Wow, 10 of our genes are within this haplotype block(?) on that chr 12 region, which is especially interesting since the 8 high-variant alleles lie within only 5 genes. 
 ```
-Looks like of our 26 genes, only 19 were identified via interproscan. 
-
-Then we'll pull interproscan ids using the transcript ids from snpEFF
-```
-PROTEINS="/scratch/users/kaiku/may18_26_pipeline/transcriptomics/dec25_maker2_mpi/functional_annotation/no_mpi_round3.2.all.maker.proteins.fasta"
-
-awk -v IDS="major_allele_differences_NSNMU.HIGH_MODERATE.transcript_ids.txt" '
-BEGIN {
-  while ((getline id < IDS) > 0) keep[id]=1
-}
-^>/ {
-  id=$1
-  sub(/^>/, "", id)
-  print_record = (id in keep)
-}
-print_record {
-  print
-}
-' "$PROTEINS" > major_allele_differences_NSNMU.HIGH_MODERATE.proteins.faa
-
-grep -c "^>" major_allele_differences_NSNMU.HIGH_MODERATE.proteins.faa
-```
-
-check missing IDs
+Summarize what databases/domains are represented:
 
 ```bash
-grep "^>" major_allele_differences_NSNMU.HIGH_MODERATE.proteins.faa \
-  | sed 's/^>//; s/[[:space:]].*//' \
-  | sort -u \
-  > recovered_HIGH_MODERATE.protein_ids.txt
-
-comm -23 \
-  <(sort major_allele_differences_NSNMU.HIGH_MODERATE.transcript_ids.txt) \
-  <(sort recovered_HIGH_MODERATE.protein_ids.txt) \
-  > missing_HIGH_MODERATE.protein_ids.txt
-
-wc -l missing_HIGH_MODERATE.protein_ids.txt
-head missing_HIGH_MODERATE.protein_ids.txt
+cut -f4 major_allele_differences_NSNMU.HIGH_MODERATE.interpro.tsv \
+  | sort \
+  | uniq -c \
+  | sort -nr
 ```
+
+Summarize the most common descriptions:
+
+```bash
+cut -f4,5,6 major_allele_differences_NSNMU.HIGH_MODERATE.interpro.tsv \
+  | sort \
+  | uniq -c \
+  | sort -nr
+```
+
+Finally, summarize candidate transcripts with InterPro descriptions (important!)
+
+```bash
+cut -f1,4,5,6,12,13 major_allele_differences_NSNMU.HIGH_MODERATE.interpro.tsv \
+  | sort -u \
+  > summary_major_allele_differences_NSNMU.HIGH_MODERATE.interpro.tsv
+```
+
+
+### Taking a closer look at the 5 genes from the high-impact variants (no moderate-variants)
+
+```bash
+grep -F -f major_allele_differences_NSNMU.HIGH.gene_ids.txt major_allele_differences_NSNMU.HIGH_MODERATE.interpro.tsv > interpro_high_impact_variants_only.tsv
+```
+
+
