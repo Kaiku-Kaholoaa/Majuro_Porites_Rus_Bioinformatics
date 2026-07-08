@@ -358,7 +358,7 @@ NUMBER OF UNIQUE HIGH + MODERATE GENES
 
 
 ### Preliminary High Impact Variants:
-Okay, all the high-impact variants are on Chr12 and span one 71,637 base region from pos 22974430 - 23046067.
+Okay, all the high-impact variants are on Chr12 and span one 71,637 base region from pos 22,974,430 - 23,046,067.
 In this region we identify 5 unique genes with these high-impact variants.
 
 ### Preliminary High & Medium Impact Variants:
