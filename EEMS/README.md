@@ -57,7 +57,22 @@ awk 'FNR==NR{keep[$2]=1; next} ($1 in keep){print $2,$3}' prus_eems.fam prus_eem
 ```
 yay! 
 
-Then with this we can check concurrency of order using the fam file, .order file (from bed2diffs), and in our newly created .coord file. 
-and trust me, they looked good! 
+Then with this we can check concurrency of order using the fam file, .order file (from bed2diffs), and in our newly created .coord file using another awk command:
+```bash
+awk '{print $1, NR}' prus_eems.fam > fam_order.txt
+```
+```bash
+awk '{print $1, NR}' prus_eems.order > diffs_order.txt
+```
+```bash
+awk '{print $1, NR}' prus_eems.coord > sample_coords_order.txt
+```
+With these, we can just ensure sample size (wc -l) and order (tail) are consistent across files!
+
+```bash
+wc -l fam_order.txt diffs_order.txt sample_coords_order.txt
+tail fam_order.txt diffs_order.txt sample_coords_order.txt
+```
+woot woot! and trust me, they look good!
 
 ### datapath.ini file 
