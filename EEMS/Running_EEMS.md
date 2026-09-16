@@ -143,7 +143,7 @@ qEffctProposalS2 = 0.001
 mrateMuProposalS2 = 0.05
 
 
-#previous run:
+#previous values:			#Adjustment made in this run:
 #mSeedsProposalS2 = 0.01	#KEPT SAME
 #qSeedsProposalS2 = 0.10	#SLIGHTLY INCREASED
 
