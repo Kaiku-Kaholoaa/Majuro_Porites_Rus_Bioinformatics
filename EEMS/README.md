@@ -47,12 +47,12 @@ awk 'FNR==NR{keep[$2]=1; next} ($1 in keep){print $2,$3}' prus_eems.fam prus_eem
 ```
 
 `head prus_eems.coord`
-`
+```
 7.170308 171.13354
 7.170308 171.13354
 7.111973 171.120796
 7.111973 171.120796
-`
+```
 yay! 
 
 Then with this we can check concurrency of order using the fam file, .order file (from bed2diffs), and in our newly created .coord file. 
