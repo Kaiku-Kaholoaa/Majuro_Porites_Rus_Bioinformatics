@@ -119,7 +119,8 @@ Acceptance proportions:
 ```
 So, lets adjust these parameters from round 1 by making a new round2.ini file with a new output path
 
-```
+`nano prus_eems_run2.ini`
+```bash
 datapath = ./prus_eems
 mcmcpath = ./prus_eems_output_run2
 
