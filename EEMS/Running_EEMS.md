@@ -56,8 +56,9 @@ Final log llike: 38304.25
 
 Great, the next step is fine tuning the model so that it works properly :)
 
-## Fine Tuning Our Model for Chain Convergence
+## Fine Tuning Our Model
 
+### Understanding Acceptance Proportions
 Okay, the EEMS output seems like a lot, but for now we can just focus on the acceptance proportions, which we want to be between 20% and 40%. 
 These are essentially how the chain explores probable space and the likelyhood it accepts or rejects a stepping-stone movement based on genotype similarity.
 Here we are aiming for a **balance between step size and acceptance between proposals,** while exploring a decent amount of probably space.
@@ -86,13 +87,14 @@ A good acceptance rate like 20%-40% however, allows us to explore space evenly, 
 ```
 Notice how the chain is able to move through space efficiently, given these more moderate steps! 
 
+### Adjusting our parameters to fine tune our acceptance proportions: 
 Great, now we can learn how to adjust our acceptance rates. Generally, they're created by these parameters:
 ```
-       mSeedsProposalS2 = 0.010000
-       qSeedsProposalS2 = 0.100000
-       mEffctProposalS2 = 0.100000
-       qEffctProposalS2 = 0.001000
-      mrateMuProposalS2 = 0.010000
+       mSeedsProposalS2 = 0.010000 #where the migration regions are located, affects mTileMove
+       qSeedsProposalS2 = 0.100000 #where the diversity regions are located, affects qTileMove
+       mEffctProposalS2 = 0.100000 #how high/low migration is in one migration region, affects mTileRate
+       qEffctProposalS2 = 0.001000 #how high/low diversity is in one diversity region, affects qTileRate
+      mrateMuProposalS2 = 0.010000 #the overall baseline migration rate across the whole map
 ```
 The easiest way to remember them is:
 
@@ -101,3 +103,51 @@ q = local genetic diversity
 Seeds = where the spatial regions are
 Effct = what value each region has
 ProposalS2 = how big an MCMC jump EEMS tries to make; S2 means variance
+
+So, given our previous acceptance results, let's adjust them to get the acceptance proportions around 20-40%:
+
+```bash
+Acceptance proportions:
+	(31986/125086) = 26% for proposal type "qTileRate",			#qEffctProposalS2 IS GOOD
+	(6005/124681) = 4.8% for proposal type "qTileMove",		 	#qSeedsProposalS2 VERY LOW
+	(26033/125852) = 21% for proposal type "qBirthDeath"		#generally ignore, parameters dont directly influence this
+	(286062/374560) = 76% for proposal type "mTileRate",		#mEffctProposalS2 VERY HIGH
+	(106772/249985) = 43% for proposal type "mMeanRate",		#mrateMuProposalS2 SLIGHTLY HIGH
+	(98243/374763) = 26% for proposal type "mTileMove",			#mSeedsProposalS2 GOOD
+	(100838/375071) = 27% for proposal type "mBirthDeath"		#generally ignore, parameters dont directly influence this
+	(36728/250002) = 15% for proposal type "degrees of freedom"	#generally ignore, parameters dont directly influence this
+```
+So, lets adjust these parameters from round 1 by making a new round2.ini file with a new output path
+
+```
+datapath = ./prus_eems
+mcmcpath = ./prus_eems_output_run2
+
+nIndiv = 159
+nSites = 22953951
+nDemes = 200
+
+diploid = true
+
+numMCMCIter = 2000000
+numBurnIter = 1000000
+numThinIter = 9999
+
+mSeedsProposalS2 = 0.01
+qSeedsProposalS2 = 0.01
+
+mEffctProposalS2 = 6.0
+qEffctProposalS2 = 0.001
+
+mrateMuProposalS2 = 0.05
+
+
+#previous run:
+#mSeedsProposalS2 = 0.01	#KEPT SAME
+#qSeedsProposalS2 = 0.10	#SLIGHTLY INCREASED
+
+#mEffctProposalS2 = 0.10	#INCREASED A LOT
+#qEffctProposalS2 = 0.001	#KEPT SAME
+
+#mrateMuProposalS2 = 0.01	#SLIGHTLY INCREASED
+```
