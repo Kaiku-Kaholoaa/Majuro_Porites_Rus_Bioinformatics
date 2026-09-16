@@ -33,7 +33,7 @@ This was the problem maker for my analysis. This is because we had ~179 samples 
 
 Using awk, I was able to use the fam file to make a list of IDs to keep, and then print only the lat lons (from the incorrect file) if their IDs were stored from the fam file!
 
-```
+``` bash
 awk 'FNR==NR{keep[$2]=1; next} ($1 in keep){print $2,$3}' prus_eems.fam prus_eems_incorrect_coords.txt
 
 # FNR==NR 
@@ -46,14 +46,15 @@ awk 'FNR==NR{keep[$2]=1; next} ($1 in keep){print $2,$3}' prus_eems.fam prus_eem
   #print the lat ($2) and lon ($3) from the second file. 
 ```
 
-```
-$ head prus_eems.coord 
+`head prus_eems.coord`
+`
 7.170308 171.13354
 7.170308 171.13354
 7.111973 171.120796
 7.111973 171.120796
-#yay!
-```
+`
+yay! 
+
 Then with this we can check concurrency of order using the fam file, .order file (from bed2diffs), and in our newly created .coord file. 
 and trust me, they looked good! 
 
