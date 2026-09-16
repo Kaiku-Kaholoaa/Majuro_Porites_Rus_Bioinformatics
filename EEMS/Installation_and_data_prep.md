@@ -39,7 +39,7 @@ This was the problem maker for my analysis. This is because we had ~179 samples 
 Using awk, I was able to use the fam file to make a list of IDs to keep, and then print only the lat lons (from the incorrect file) if their IDs were stored from the fam file!
 
 ``` bash
-awk 'FNR==NR{keep[$2]=1; next} ($1 in keep){print $2,$3}' prus_eems.fam prus_eems_incorrect_coords.txt > prus_eems.coord
+awk 'FNR==NR{keep[$2]=1; next} ($1 in keep){print $3,$2}' prus_eems.fam prus_eems_incorrect_coords.txt > prus_eems.coord
 
 #also doing one with the IDS kept so we can do some bookkeeping later:
 awk 'FNR==NR{keep[$2]=1; next} ($1 in keep){print}' prus_eems.fam prus_eems_incorrect_coords.txt > prus_eems_coords_with_IDs.txt
@@ -53,16 +53,17 @@ awk 'FNR==NR{keep[$2]=1; next} ($1 in keep){print}' prus_eems.fam prus_eems_inco
   # create list called 'keep', and store the second column of the fam file (IDS) with variable of 1 (not used, but needed to make the list). Then move to next row via next. 
 # ($1 in keep)
   # If the ID ($1 in the incorrect_coords file) matches a key in the list called keep (from fam file),
-# {print $2,$3}
-  # print the lat ($2) and lon ($3) from the second file. 
+# {print $3,$2}
+  # print the lon ($3) and lat ($2) from the second file. 
 ```
 
 `head prus_eems.coord` 
 ```
-7.170308 171.13354
-7.170308 171.13354
-7.111973 171.120796
-7.111973 171.120796
+171.13354 7.170308
+171.13354 7.170308
+171.120796 7.111973
+171.120796 7.111973
+171.120796 7.111973
 ```
 Yay! Also remember it needs to be in LON LAT formatting!  
 
@@ -105,7 +106,7 @@ P-rus_399_S222 159
 Awesome! Sample input files ready, but now we need our .outer file outlining our spatial polygon (the area around and between our samples).
 
 ### datapath.outer file
-This file is essentially our spatial bounds, and should encompass the locations of our collected samples (prus_eems.coord). The way I did this was I literally plotted points on google maps, extracted the lat lons, and ordered it the way the EEMS needs it, which is counter clockwise and **closed** which means the first point in the polygon is also the last. 
+This file is essentially our spatial bounds, and should encompass the locations of our collected samples (prus_eems.coord). The way I did this was I literally plotted points on google maps, extracted the lon lats, and ordered it the way the EEMS needs it, which is counter clockwise and **closed** which means the first point in the polygon is also the last. 
 
 Here is a snippet of that file: 
 ```bash 
