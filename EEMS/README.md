@@ -20,13 +20,18 @@ For EEMS, we need three input files and a paramters .ini file.
 ### datapath.fam file
 The fam file in my opinion is one of the most important for data cleaning. This is because order of samples must be preserved across all input files, and it all starts with the fam file. This is essentially the foundation from which we build the rest of our files. For our analysis, we took the rare allele dataset (no_maf_no_singletons), converted them to bed files (for bed2diffs), and renamed them to prus_eems. This dataset contains 159 individuals, and so we must preserve this number and their order across all other input files. 
 
-### datapath.diffs file
-Next is the diffs file that we created using bed2diffs. After installation, we did something similar to the documentation provided by using 
+### datapath.fam and datapath.diffs files
+The fam file in my opinion is one of the most important for data cleaning. This is because order of samples must be preserved across all input files, and it all starts with the fam file. This is essentially the foundation from which we build the rest of our files. For our analysis, we took the rare allele dataset (no_maf_no_singletons), converted them to bed files (for bed2diffs), and renamed them to prus_eems. This dataset contains 159 individuals, and so we must preserve this number and their order across all other input files. 
 
+File name: prus_eems.fam
+
+Next is the **datapath.diffs** file that we created using bed2diffs. After program installation via https://github.com/dipetkov/eems/tree/master/bed2diffs , we followed the documentation to produce our prus_eems.diffs file. Here they also recommended to remove snps with high missingess (which we did via qa/qc), and proceeding with bed2diffs_v1 instead of bed2diffs_v2:
 `
 ./src/bed2diffs_v1 --bfile ./test/example-SNP-major-mode --nthreads 2
 `
-source: https://github.com/dipetkov/eems/tree/master/bed2diffs
+The result is our unlabeled, pairwise genotype matrix that can be used by eems. 
+
+File name: prus_eems.diffs
 
 ### datapath.coord file
 This was the problem maker for my analysis. This is because we had ~179 samples before qc, and this file had sample IDS followed by LAT LON. The first issue is that we included samples that did not pass qc, and the second issue is that sample IDS should not be in this file. It should only have LAT LONs, which emphasizes the need for correct ordering. However, both issues were resolved using an AWK command, and I'm proud to say i'm learning AWK pretty well! 
