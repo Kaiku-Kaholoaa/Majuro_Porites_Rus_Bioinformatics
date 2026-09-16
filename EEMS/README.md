@@ -36,13 +36,16 @@ Using awk, I was able to use the fam file to make a list of IDs to keep, and the
 ``` bash
 awk 'FNR==NR{keep[$2]=1; next} ($1 in keep){print $2,$3}' prus_eems.fam prus_eems_incorrect_coords.txt
 ```
+
+```
 FNR==NR 
   #if total rows read == rows read in current file (essentially means "for the first file only {do action}"
 {keep[$2]=1; next} 
   #create list called 'keep', and store the second column of the fam file (IDS) with variable of 1 (not used, but needed to make the list). Then move to next row via next. 
 ($1 in keep)
   #If the ID ($1 in the incorrect_coords file) matches a key in the list called keep (from fam file),
-{print $2,$3} #print the lat ($2) and lon ($3) from the second file. 
+{print $2,$3}
+  #print the lat ($2) and lon ($3) from the second file. 
 ```
 
 `head prus_eems.coord`
