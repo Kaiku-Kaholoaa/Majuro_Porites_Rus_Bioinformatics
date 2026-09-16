@@ -34,7 +34,7 @@ The result is our unlabeled, pairwise genotype matrix that can be used by eems.
 File name: prus_eems.diffs
 
 ### datapath.coord file
-This was the problem maker for my analysis. This is because we had ~179 samples before qc, and this file had sample IDS followed by LAT LON. The first issue is that we included samples that did not pass qc, and the second issue is that sample IDS should not be in this file. It should only have LAT LONs, which emphasizes the need for correct ordering. However, both issues were resolved using an AWK command, and I'm proud to say i'm learning AWK pretty well! 
+This was the problem maker for my analysis. This is because we had ~179 samples before qc, and this file had sample IDS followed by LON LAT. The first issue is that we included samples that did not pass qc, and the second issue is that sample IDS should not be in this file. It should only have LON LATs, which emphasizes the need for correct ordering. However, both issues were resolved using an AWK command, and I'm proud to say i'm learning AWK pretty well! 
 
 Using awk, I was able to use the fam file to make a list of IDs to keep, and then print only the lat lons (from the incorrect file) if their IDs were stored from the fam file!
 
@@ -57,27 +57,68 @@ awk 'FNR==NR{keep[$2]=1; next} ($1 in keep){print}' prus_eems.fam prus_eems_inco
   # print the lat ($2) and lon ($3) from the second file. 
 ```
 
-`head prus_eems.coord`
+`head prus_eems.coord` 
 ```
 7.170308 171.13354
 7.170308 171.13354
 7.111973 171.120796
 7.111973 171.120796
 ```
-yay! 
+Yay! Also remember it needs to be in LON LAT formatting!  
 
 Then with this we can check concurrency of order using the fam file, .order file (from bed2diffs), and in our newly created .coord file using another awk command:
 ```bash
 awk '{print $2, NR}' prus_eems.fam > fam_order.txt
-awk '{print $1, NR}' prus_eems.order > diffs_order.txt
+awk '{print $2, NR}' prus_eems.order > diffs_order.txt
 awk '{print $1, NR}' prus_eems_coords_with_IDs.txt > sample_coords_order.txt
 ```
 With these, we can just ensure sample size (wc -l) and order (tail) are consistent across files!
 
 ```bash
 wc -l fam_order.txt diffs_order.txt sample_coords_order.txt
+
+fam_order.txt        159
+diffs_order.txt      159
+sample_coords_order  159
+
 tail fam_order.txt diffs_order.txt sample_coords_order.txt
+
+fam_order.txt
+P-rus_395_S220 156
+P-rus_396_S161 157
+P-rus_397_S162 158
+P-rus_399_S222 159
+
+diffs_order.txt
+P-rus_395_S220 156
+P-rus_396_S161 157
+P-rus_397_S162 158
+P-rus_399_S222 159
+
+sample_coords_order.txt
+P-rus_395_S220 156
+P-rus_396_S161 157
+P-rus_397_S162 158
+P-rus_399_S222 159
 ```
-woot woot! and trust me, they look good!
+
+Awesome! Sample input files ready, but now we need our .outer file outlining our spatial polygon (the area around and between our samples).
+
+### datapath.outer file
+This file is essentially our spatial bounds, and should encompass the locations of our collected samples (prus_eems.coord). The way I did this was I literally plotted points on google maps, extracted the lat lons, and ordered it the way the EEMS needs it, which is counter clockwise and **closed** which means the first point in the polygon is also the last. 
+
+Here is a snippet of that file: 
+```bash 
+head -3 *.outer
+171.057210868626811	7.226999696692798
+171.039859607264788	7.189203746942331
+171.021598798360600	7.150927591577632
+
+tail -3 *.outer
+171.090024025820099	7.208316356772613
+171.087898211318702	7.221695887737019
+171.057210868626811	7.226999696692798
+```
+Remember that both the .outer and .coord files need to be formatted as LON LAT, but otherwise, that's it for our input files! woot woot!
 
 ### datapath.ini file 
