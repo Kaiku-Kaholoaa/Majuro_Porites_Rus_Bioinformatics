@@ -120,6 +120,43 @@ tail -3 *.outer
 171.087898211318702	7.221695887737019
 171.057210868626811	7.226999696692798
 ```
-Remember that both the .outer and .coord files need to be formatted as LON LAT, but otherwise, that's it for our input files! woot woot!
+Remember that both the .outer and .coord files need to be formatted as LON LAT, but otherwise, that's it for our input files! 
+
+Woot woot!
 
 ### datapath.ini file 
+The final file we need is a parameter/initialization file for the --params argument. 
+
+Here we are essentially setting up file paths and specifying more information for our EEMS run:
+
+`cat prus_eems_run1.ini`
+
+```bash
+datapath = ./prus_eems
+#prefix of our input files
+
+mcmcpath = ./prus_eems_output_run1
+#output path, and note: run numbers will prove to be very helpful down the road
+
+nIndiv = 159
+#samples
+nSites = 22953951
+#genomic sites/snps! NOT geographic sites!
+#This number seems large (22 Million!) but it's the reality of my high coverage genomic dataset. And is a good thing! 
+nDemes = 200
+#number of triangles across the spatial plane that will be used via stepping-stone model to help estimate connectivity between sites, based on genetic similarity.
+
+diploid = true
+#set as your own
+
+numMCMCIter = 2000000
+#iteration for chain
+numBurnIter = 1000000
+#letting chains warm up
+numThinIter = 9999
+#helps to reduce autocorrelation and memory
+```
+
+Once this file is completed, then you have all the materials you need to run EEMS! Congrats! 
+
+Yippee!
