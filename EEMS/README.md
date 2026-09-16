@@ -34,7 +34,11 @@ This was the problem maker for my analysis. This is because we had ~179 samples 
 Using awk, I was able to use the fam file to make a list of IDs to keep, and then print only the lat lons (from the incorrect file) if their IDs were stored from the fam file!
 
 ``` bash
-awk 'FNR==NR{keep[$2]=1; next} ($1 in keep){print $2,$3}' prus_eems.fam prus_eems_incorrect_coords.txt
+awk 'FNR==NR{keep[$2]=1; next} ($1 in keep){print $2,$3}' prus_eems.fam prus_eems_incorrect_coords.txt > prus_eems.coord
+
+#also doing one with the IDS kept so we can do some bookkeeping later:
+awk 'FNR==NR{keep[$2]=1; next} ($1 in keep){print}' prus_eems.fam prus_eems_incorrect_coords.txt > prus_eems_coords_with_IDs.txt
+
 ```
 
 ```
@@ -59,13 +63,9 @@ yay!
 
 Then with this we can check concurrency of order using the fam file, .order file (from bed2diffs), and in our newly created .coord file using another awk command:
 ```bash
-awk '{print $1, NR}' prus_eems.fam > fam_order.txt
-```
-```bash
+awk '{print $2, NR}' prus_eems.fam > fam_order.txt
 awk '{print $1, NR}' prus_eems.order > diffs_order.txt
-```
-```bash
-awk '{print $1, NR}' prus_eems.coord > sample_coords_order.txt
+awk '{print $1, NR}' prus_eems_coords_with_IDs.txt > sample_coords_order.txt
 ```
 With these, we can just ensure sample size (wc -l) and order (tail) are consistent across files!
 
