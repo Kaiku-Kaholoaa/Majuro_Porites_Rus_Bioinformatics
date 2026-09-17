@@ -226,4 +226,6 @@ plot(
 
 dev.off()
 ```
+[prus_run4_chain.pdf](https://github.com/user-attachments/files/32315102/prus_run4_chain.pdf)
 
+Nice! The posterior looks pretty good!
