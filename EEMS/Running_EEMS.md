@@ -152,3 +152,78 @@ mrateMuProposalS2 = 0.05
 
 #mrateMuProposalS2 = 0.01	#SLIGHTLY INCREASED
 ```
+
+I did this a few times, and it took about 4 iterations to get what I wanted.. and it looks good!
+```bash
+       mSeedsProposalS2 = 0.009000
+       qSeedsProposalS2 = 0.007000
+       mEffctProposalS2 = 4.500000
+       qEffctProposalS2 = 0.000700
+      mrateMuProposalS2 = 0.035000
+
+Acceptance proportions:
+	(35354/125265) = 28% for proposal type "qTileRate",		 with proposal variance "qEffctProposalS2"
+	(33537/124585) = 27% for proposal type "qTileMove",		 with proposal variance "qSeedsProposalS2"
+	(26695/125450) = 21% for proposal type "qBirthDeath"
+	(113325/374568) = 30% for proposal type "mTileRate",		 with proposal variance "mEffctProposalS2"
+	(66154/250273) = 26% for proposal type "mMeanRate",		 with proposal variance "mrateMuProposalS2"
+	(102338/374534) = 27% for proposal type "mTileMove",		 with proposal variance "mSeedsProposalS2"
+	(182368/375283) = 49% for proposal type "mBirthDeath"
+	(36404/250042) = 15% for proposal type "degrees of freedom"
+```
+yay! now we can evaluate chains using R:
+
+## Evaluating Chain Convergence
+For our chains, we want to see the plot generally centered on the y-axis with hills and valleys. This demonstrates that the model is binding itself to the likely posterior. A bad plot would be a diagonal line that is increasing like a 1:1 line. We don't want that because it shows that the model continually increases and is not bound well by priors or parameters. 
+
+To do this, we can load R on the server, and then make an rscript. Our goal is to read in the mcmcpilogl file which contains our log priors and log likelihoods, and then take those values to mathematically build the posterior (Posterior = prior + likelihood on the log scale). Then we want to plot it and save it as a PDF:
+
+```nano check_chain.R```
+```
+# Read EEMS posterior output
+chain <- read.table("prus_eems_output_run4/mcmcpilogl.txt")
+
+# EEMS writes two columns:
+# column 1 = log prior
+# column 2 = log likelihood
+colnames(chain) <- c("log_prior", "log_likelihood")
+
+# Posterior = prior + likelihood on the log scale
+chain$log_posterior <- chain$log_prior + chain$log_likelihood
+
+# Look at the data
+print(head(chain))
+print(summary(chain))
+
+# Save plots to a PDF
+pdf("prus_run4_chain.pdf", width = 8, height = 8)
+
+par(mfrow = c(3, 1))
+
+plot(
+    chain$log_posterior,
+    type = "l",
+    xlab = "Saved MCMC sample",
+    ylab = "Log posterior",
+    main = "Posterior trace"
+)
+
+plot(
+    chain$log_likelihood,
+    type = "l",
+    xlab = "Saved MCMC sample",
+    ylab = "Log likelihood",
+    main = "Likelihood trace"
+)
+
+plot(
+    chain$log_prior,
+    type = "l",
+    xlab = "Saved MCMC sample",
+    ylab = "Log prior",
+    main = "Prior trace"
+)
+
+dev.off()
+```
+
