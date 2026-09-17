@@ -176,7 +176,7 @@ yay! now we can evaluate chains using R:
 ## Evaluating Chain Convergence
 For our chains, we want to see the plot generally centered on the y-axis with hills and valleys. This demonstrates that the model is binding itself to the likely posterior. A bad plot would be a diagonal line that is increasing like a 1:1 line. We don't want that because it shows that the model continually increases and is not bound well by priors or parameters. 
 
-To do this, we can load R on the server, and then make an rscript. Our goal is to read in the mcmcpilogl file which contains our log priors and log likelihoods, and then take those values to mathematically build the posterior (Posterior = prior + likelihood on the log scale). Then we want to plot it and save it as a PDF:
+To do this, we can load R on the server, and then make an rscript. Our goal is to read in the mcmcpilogl file which contains our log priors and log likelihoods, and then take those values to mathematically build the posterior (Posterior = prior + likelihood on the log scale). With this, we can then plot it and save it as a PDF (and it's called a traceplot!):
 
 ```nano check_chain.R```
 ```
@@ -228,4 +228,51 @@ dev.off()
 ```
 [prus_run4_chain.pdf](https://github.com/user-attachments/files/32315102/prus_run4_chain.pdf)
 
-Nice! The posterior looks pretty good!
+Nice! The posterior traceplot looks pretty good! The only concern however is that our sample size is small at ~100. We can increase this by reducing thinning from 9999 to 999. 
+
+## Creating Final Outputs
+When running eems, we essentially need to run the model 4 times, on 4 random seeds. These are therefore 4 independent chains, and we want to plot the chains together to ensure that they are all generally exploring the same posterior space. If two chains are clumping together while others are not, this could be a potential issue. the largest red flag would be if some chains do things that no other chains do. That is bad and demonstrates that the chains can randomly move around due to chance, and not due to the data. 
+
+The first step is to create 4 new .ini files that mimic the thinning changes and new output directories. Here are the first 15 rows of 2 of my chains, and don't forget to make the other two! And remember to keep the parameters the same!:
+
+``` head -15  prus_eems_final_chain*.ini```
+```
+==> prus_eems_final_chain1.ini <==
+datapath = ./prus_eems
+mcmcpath = ./prus_eems_output_final_chain1
+
+nIndiv = 159
+nSites = 22953951
+nDemes = 200
+
+diploid = true
+
+numMCMCIter = 2000000
+numBurnIter = 1000000
+numThinIter = 999
+
+mSeedsProposalS2 = 0.009
+qSeedsProposalS2 = 0.007
+
+==> prus_eems_final_chain2.ini <==
+datapath = ./prus_eems
+mcmcpath = ./prus_eems_output_final_chain2
+
+nIndiv = 159
+nSites = 22953951
+nDemes = 200
+
+diploid = true
+
+numMCMCIter = 2000000
+numBurnIter = 1000000
+numThinIter = 999
+
+mSeedsProposalS2 = 0.009
+qSeedsProposalS2 = 0.007
+```
+
+and finally, here is the sbatch script we can use to run all 4 chains with their different random seeds :) :
+
+
+
