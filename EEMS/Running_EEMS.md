@@ -274,5 +274,289 @@ qSeedsProposalS2 = 0.007
 
 and finally, here is the sbatch script we can use to run all 4 chains with their different random seeds :) :
 
+```cat final_run_eems-snps.sbatch ```
+```
+#!/bin/bash
+#SBATCH --job-name=final_run_eems-snps
+#SBATCH -p serc,spalumbi,hns
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=10
+#SBATCH --time=4:00:00
+#SBATCH --mem=24G
+#SBATCH --output=final_prus_eems.out
+#SBATCH --error=final_prus_eems.err
+#SBATCH --mail-type=FAIL,SUCCESS
+#SBATCH --mail-user=kaiku@stanford.edu
+
+set -euo pipefail
+
+/scratch/users/kaiku/eems/runeems_snps/src/runeems_snps \
+    --params prus_eems_final_chain1.ini \
+    --seed 183746
+
+/scratch/users/kaiku/eems/runeems_snps/src/runeems_snps \
+    --params prus_eems_final_chain2.ini \
+    --seed 739067
+
+/scratch/users/kaiku/eems/runeems_snps/src/runeems_snps \
+    --params prus_eems_final_chain3.ini \
+    --seed 563241
+
+/scratch/users/kaiku/eems/runeems_snps/src/runeems_snps \
+    --params prus_eems_final_chain4.ini \
+    --seed 251892
+```
+
+Awesome!
+
+From here I peeked into each chain's eemsrun.txt file, and found that all chains were exploring the same space, but it's important that we plot them better using R:
+
+```bash
+cat plot_final_eems_plots.R
+```
+
+```bash
+# ============================================================
+# EEMS FINAL CHAIN DIAGNOSTICS
+# Four independent chains
+# ============================================================
 
 
+# ------------------------------------------------------------
+# 1. Define EEMS output directories
+# ------------------------------------------------------------
+
+mcmcpath <- c(
+    "./prus_eems_output_final_chain1",
+    "./prus_eems_output_final_chain2",
+    "./prus_eems_output_final_chain3",
+    "./prus_eems_output_final_chain4"
+)
+
+
+# ------------------------------------------------------------
+# 2. Make sure all four runs exist
+# ------------------------------------------------------------
+
+for (p in mcmcpath) {
+
+    if (!file.exists(file.path(p, "eemsrun.txt"))) {
+        stop(paste("Missing EEMS output:", p))
+    }
+
+}
+
+cat("Found all four EEMS chains.\n")
+
+
+# ------------------------------------------------------------
+# 3. Read log prior + log likelihood
+# ------------------------------------------------------------
+
+pilogl_files <- file.path(
+    mcmcpath,
+    "mcmcpilogl.txt"
+)
+
+chains <- lapply(
+    pilogl_files,
+    read.table
+)
+
+
+# ------------------------------------------------------------
+# 4. Name columns and calculate log posterior
+# ------------------------------------------------------------
+
+for (i in seq_along(chains)) {
+
+    colnames(chains[[i]]) <- c(
+        "log_prior",
+        "log_likelihood"
+    )
+
+    chains[[i]]$log_posterior <-
+        chains[[i]]$log_prior +
+        chains[[i]]$log_likelihood
+}
+
+
+# ------------------------------------------------------------
+# 5. Print number of saved samples
+# ------------------------------------------------------------
+
+cat("\nSaved posterior samples:\n")
+
+for (i in seq_along(chains)) {
+
+    cat(
+        "Chain",
+        i,
+        "=",
+        nrow(chains[[i]]),
+        "\n"
+    )
+
+}
+
+
+# ------------------------------------------------------------
+# 6. LOG POSTERIOR TRACE
+# ------------------------------------------------------------
+
+posterior_matrix <- do.call(
+    cbind,
+    lapply(
+        chains,
+        function(x) x$log_posterior
+    )
+)
+
+pdf(
+    "prus_eems_final_posterior_trace.pdf",
+    width = 9,
+    height = 6
+)
+
+matplot(
+    posterior_matrix,
+    type = "l",
+    lty = 1,
+    xlab = "Saved MCMC sample",
+    ylab = "Log posterior",
+    main = "EEMS final chains: log posterior"
+)
+
+legend(
+    "topright",
+    legend = paste("Chain", 1:4),
+    lty = 1,
+    bty = "n"
+)
+
+dev.off()
+
+
+# ------------------------------------------------------------
+# 7. LOG LIKELIHOOD TRACE
+# ------------------------------------------------------------
+
+likelihood_matrix <- do.call(
+    cbind,
+    lapply(
+        chains,
+        function(x) x$log_likelihood
+    )
+)
+
+pdf(
+    "prus_eems_final_likelihood_trace.pdf",
+    width = 9,
+    height = 6
+)
+
+matplot(
+    likelihood_matrix,
+    type = "l",
+    lty = 1,
+    xlab = "Saved MCMC sample",
+    ylab = "Log likelihood",
+    main = "EEMS final chains: log likelihood"
+)
+
+legend(
+    "topright",
+    legend = paste("Chain", 1:4),
+    lty = 1,
+    bty = "n"
+)
+
+dev.off()
+
+
+# ------------------------------------------------------------
+# 8. LOG PRIOR TRACE
+# ------------------------------------------------------------
+
+prior_matrix <- do.call(
+    cbind,
+    lapply(
+        chains,
+        function(x) x$log_prior
+    )
+)
+
+pdf(
+    "prus_eems_final_prior_trace.pdf",
+    width = 9,
+    height = 6
+)
+
+matplot(
+    prior_matrix,
+    type = "l",
+    lty = 1,
+    xlab = "Saved MCMC sample",
+    ylab = "Log prior",
+    main = "EEMS final chains: log prior"
+)
+
+legend(
+    "topright",
+    legend = paste("Chain", 1:4),
+    lty = 1,
+    bty = "n"
+)
+
+dev.off()
+
+
+# ------------------------------------------------------------
+# 9. Print posterior summaries
+# ------------------------------------------------------------
+
+cat("\nLog posterior summaries:\n")
+
+for (i in seq_along(chains)) {
+
+    cat("\nChain", i, "\n")
+
+    print(
+        summary(
+            chains[[i]]$log_posterior
+        )
+    )
+
+}
+
+
+# ------------------------------------------------------------
+# 10. Run official EEMS plotting package if installed
+# ------------------------------------------------------------
+
+if (requireNamespace("rEEMSplots", quietly = TRUE)) {
+
+    cat("\nrEEMSplots found. Making official EEMS plots...\n")
+
+    library(rEEMSplots)
+
+    eems.plots(
+        mcmcpath = mcmcpath,
+        plotpath = "./prus_eems_final_combined",
+        longlat = TRUE,
+        out.png = FALSE
+    )
+
+    cat("Official EEMS plots completed.\n")
+
+} else {
+
+    cat("\nrEEMSplots is not installed.\n")
+    cat("The three custom diagnostic PDFs were still created.\n")
+
+}
+
+
+cat("\nFinished!\n")
+```
+Nice, and we can look at the traceplots!
