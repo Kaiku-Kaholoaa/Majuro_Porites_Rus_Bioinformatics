@@ -38,7 +38,7 @@ plink2 \
   --thin 0.25
 ```
 
-The output will look something like this:
+The output will look something like this (below is an old result, not the actually-used output):
 
 `head linkage_decay2.vcor`
 
@@ -47,11 +47,6 @@ OZ037992.1	7731	OZ037992.1:7731:T:C	OZ037992.1	44011	OZ037992.1:44011:C:G	0.2094
 OZ037992.1	7731	OZ037992.1:7731:T:C	OZ037992.1	44570	OZ037992.1:44570:C:A	0.220901
 OZ037992.1	7734	OZ037992.1:7734:T:C	OZ037992.1	7736	OZ037992.1:7736:T:G	1
 OZ037992.1	7734	OZ037992.1:7734:T:C	OZ037992.1	7778	OZ037992.1:7778:T:A	0.340884
-OZ037992.1	7734	OZ037992.1:7734:T:C	OZ037992.1	7827	OZ037992.1:7827:T:C	0.305002
-OZ037992.1	7736	OZ037992.1:7736:T:G	OZ037992.1	7778	OZ037992.1:7778:T:A	0.340959
-OZ037992.1	7736	OZ037992.1:7736:T:G	OZ037992.1	7827	OZ037992.1:7827:T:C	0.305099
-OZ037992.1	7739	OZ037992.1:7739:G:A	OZ037992.1	7749	OZ037992.1:7749:A:G	0.748072
-OZ037992.1	7739	OZ037992.1:7739:G:A	OZ037992.1	7806	OZ037992.1:7806:T:G	0.555487
 
 Great, now we can write our own python script that will calculate the average r^2 value based on the distances between SNPs. 
 
@@ -100,6 +95,38 @@ for i in bin_dict:
 ```
 
 ## Step 3: Plot!
-Great work! :) All that's left to do is plot!
+```cat plot.py```
+```
+ cat plot.py 
+import sys
+import matplotlib.pyplot as plt
+from collections import defaultdict
+import numpy as np
+
+g = defaultdict(list)
+#OZ037994.1	500	0.232311	0.313767
+with open(sys.argv[1],'r') as f:
+	next(f)
+	for line in f:
+		l=line.strip().split()
+		dist = int(l[1])
+		r2 = float(l[2])
+		g[dist].append(r2)
 
 
+x,y=[],[]
+
+for k in g:
+	x.append(k)
+	y.append(np.average(g[k]))
+
+
+plt.scatter(x,y,s=1,color='black') 
+plt.savefig('prus_ld',dpi=720)
+```
+
+Great work! :) Here in our dataset, we see that decay drops to 0.05 at around 100kb. 
+
+<img width="2166" height="1833" alt="decay1000kb_25pct" src="https://github.com/user-attachments/assets/5b33ca2b-0172-40b8-996a-5d71c9626625" />
+
+Note: pruning in the no_maf_no_singletons (all rare alleles except singletons) dataset is tricky, because --indep-pairwise will only take the first 100 snps if you do not provide the 'kb' modifier. Essentially, this will make the window lengths between the pruned and unpruned datasets vastly different and thus uncomparable. To resolve this, ensure you do --indep-pairwise 100kb 1 0.1. This standardizes the window to 100kb, with a stepsize of 1, and an r^2 threshold of 0.1. Use this for comparing between pruned and unpruned datasets in future analyses (like the rare allele pca). Great work!
