@@ -30,9 +30,12 @@ plink2 --pfile prus_qc_noclones --recode vcf --out prus_qc_noclones
 
 plink2 \
   --vcf prus_qc_noclones.vcf \
-  --r2-phased \
-  --ld-window-kb 50 \
-  --out linkage_decay2
+  --r2-unphased \
+  --ld-window-kb 1000 \
+  --out test_25_pct_may26_linkage_decay_1000kb \
+  --ld-window-r2 0 \
+  --threads 64 \
+  --thin 0.25
 ```
 
 The output will look something like this:
