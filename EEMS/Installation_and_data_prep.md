@@ -26,11 +26,16 @@ The fam file in my opinion is one of the most important for data cleaning. This 
 File name: prus_eems.fam
 
 Next is the **datapath.diffs** file that we created using bed2diffs. After program installation via https://github.com/dipetkov/eems/tree/master/bed2diffs , we followed the documentation to produce our prus_eems.diffs file. Here they also recommended to remove snps with high missingess (which we did via qa/qc), and proceeding with bed2diffs_v1 instead of bed2diffs_v2:
-`
-./src/bed2diffs_v1 --bfile ./test/example-SNP-major-mode --nthreads 2
-`
-The result is our unlabeled, pairwise genotype matrix that can be used by eems. 
 
+```bash
+(job 44381666) $ /scratch/users/kaiku/eems/bed2diffs/src/bed2diffs_v1 --bfile prus_qc_noclones_eems --nthreads 2
+```
+
+The result is our unlabeled, pairwise genotype matrix that can be used by eems. 
+```bash
+#Detected plink dataset prus_qc_noclones_eems.[bed/bim/fam] with 159 samples and 13841415 SNPs
+
+```
 File name: prus_eems.diffs
 
 ### datapath.coord file
