@@ -29,13 +29,11 @@ Next is the **datapath.diffs** file that we created using bed2diffs. After progr
 
 ```bash
 (job 44381666) $ /scratch/users/kaiku/eems/bed2diffs/src/bed2diffs_v1 --bfile prus_qc_noclones_eems --nthreads 2
-```
-
-The result is our unlabeled, pairwise genotype matrix that can be used by eems. 
-```bash
 #Detected plink dataset prus_qc_noclones_eems.[bed/bim/fam] with 159 samples and 13841415 SNPs
-
 ```
+
+The results are the order of our samples (.order file), and our unlabeled, pairwise genotype matrix (.diffs file) that will be used by eems:)
+
 File name: prus_eems.diffs
 
 ### datapath.coord file
