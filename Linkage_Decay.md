@@ -144,16 +144,11 @@ Although it is unlikely to support our data, we also evaluated the standard r^2 
 ```bash
 #		standard-maf_unpruned		standard-maf_ld_r2_0.1		standard-maf_ld_r2_0.2	
 		
-#snps	3,696,205						533,739						1,021,612
+#snps		13,841,415						533,739						1,021,612
 
+#		prus_rare_unpruned			prus_rare_ld_r2_0.1			prus_rare_ld_r2_0.2	
 
-```
-
-```bash
-#		rare_unpruned		rare_ld_r2_0.1		rare_ld_r2_0.2	
-
-#snps	  22,953,951			776,257				19,45,499
-
+#snps	 	22,953,951						776,257						19,45,499
 
 ```
 
