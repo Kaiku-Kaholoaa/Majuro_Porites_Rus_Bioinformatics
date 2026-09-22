@@ -142,15 +142,15 @@ To make accurate comparisons between the standard-ld-pruned and rare allele-ld-p
 Although it is unlikely to support our data, we also evaluated the standard r^2 threshold of 0.2, which is normally used by the scientific field and literature. Here are our discoveries of SNPs retained between datasets: 
 
 ```bash
-		standard-maf_unpruned		standard-maf_ld_r2_0.1		standard-maf_ld_r2_0.2	
-		3,696,205						533,739						1,021,612
-#snps	
+#		standard-maf_unpruned		standard-maf_ld_r2_0.1		standard-maf_ld_r2_0.2	
+		
+#snps	3,696,205						533,739						1,021,612
 
 
 ```
 
 ```bash
-		rare_unpruned		rare_ld_r2_0.1		rare_ld_r2_0.2	
+#		rare_unpruned		rare_ld_r2_0.1		rare_ld_r2_0.2	
 
 #snps	  22,953,951			776,257				19,45,499
 
