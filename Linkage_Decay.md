@@ -130,3 +130,32 @@ Great work! :) Here in our dataset, we see that decay drops to 0.05 at around 10
 <img width="2166" height="1833" alt="decay1000kb_25pct" src="https://github.com/user-attachments/assets/5b33ca2b-0172-40b8-996a-5d71c9626625" />
 
 Note: pruning in the no_maf_no_singletons (all rare alleles except singletons) dataset is tricky, because --indep-pairwise will only take the first 100 snps if you do not provide the 'kb' modifier. Essentially, this will make the window lengths between the pruned and unpruned datasets vastly different and thus uncomparable. To resolve this, ensure you do --indep-pairwise 100kb 1 0.1. This standardizes the window to 100kb, with a stepsize of 1, and an r^2 threshold of 0.1. Use this for comparing between pruned and unpruned datasets in future analyses (like the rare allele pca). Great work!
+
+# Appendix
+
+To make accurate comparisons between the standard-ld-pruned and rare allele-ld-pruned datasets, we specifically use plink2's --indep-pairwise function to set a distance window of 100kb with a r^2 threshold of 0.1 (which are both based on our decay plots). Thus, our command for pruning both standard and rare allele datasets is: 
+
+```bash
+--indep-pairwise 100kb 1 0.1.
+```
+
+Although it is unlikely to support our data, we also evaluated the standard r^2 threshold of 0.2, which is normally used by the scientific field and literature. Here are our discoveries of SNPs retained between datasets: 
+
+```bash
+		standard-maf_unpruned		standard-maf_ld_r2_0.1		standard-maf_ld_r2_0.2	
+		3,696,205						533,739						1,021,612
+#snps	
+
+
+```
+
+```bash
+		rare_unpruned		rare_ld_r2_0.1		rare_ld_r2_0.2	
+
+#snps	  22,953,951			776,257				19,45,499
+
+
+```
+
+
+	
