@@ -153,7 +153,10 @@ mrateMuProposalS2 = 0.05
 #mrateMuProposalS2 = 0.01	#SLIGHTLY INCREASED
 ```
 
-I did this a few times, and it took about 4 iterations to get what I wanted.. and it looks good!
+I did this a few times, and it took about 4 iterations to get what I wanted.. and it looks good! 
+
+REMEMBER, DECREASING PARAMETER VALUES CAUSES AN INCREASE IN ACCEPTANCE! This can help you with fine tuning :)
+
 ```bash
        mSeedsProposalS2 = 0.009000
        qSeedsProposalS2 = 0.007000
