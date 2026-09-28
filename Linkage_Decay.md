@@ -152,5 +152,49 @@ Although it is unlikely to support our data, we also evaluated the standard r^2 
 
 ```
 
+## Linkage Decay plot was conducted via:
+(base) [kaiku@sh04-ln07 login /scratch/users/kaiku/sept1_26_pipeline/results/dec25_reanalysis/linkage_decay]$ cat test_25_pct_may26_linkage_decay_1000kb.log
+PLINK v2.0.0-a.7LM 64-bit Intel (27 Jun 2025)
+Options in effect:
+  --ld-window-kb 1000
+  --ld-window-r2 0
+  --out test_25_pct_may26_linkage_decay_1000kb
+  --r2-unphased
+  --thin 0.25
+  --threads 64
+  --vcf prus_qc_noclones.vcf
 
-	
+Hostname: sh04-07n13.int
+Working directory: /scratch/users/kaiku/may18_26_pipeline/results/dec25_reanalysis/linkage_decay
+Start time: Sun May 31 17:04:14 2026
+
+Random number seed: 1780272254
+1547372 MiB RAM detected, ~1358896 available; reserving 773686 MiB for main
+workspace.
+Using up to 64 threads (change this with --threads).
+--vcf: 13841415 variants scanned.
+--vcf: test_25_pct_may26_linkage_decay_1000kb-temporary.pgen +
+test_25_pct_may26_linkage_decay_1000kb-temporary.pvar.zst +
+test_25_pct_may26_linkage_decay_1000kb-temporary.psam written.
+159 samples (0 females, 0 males, 159 ambiguous; 159 founders) loaded from
+test_25_pct_may26_linkage_decay_1000kb-temporary.psam.
+Note: 15 nonstandard chromosome codes present.
+13841415 variants loaded from
+test_25_pct_may26_linkage_decay_1000kb-temporary.pvar.zst.
+Note: No phenotype data present.
+--thin: 10380613 variants removed (3460802 remaining).
+Calculating allele frequencies... done.
+3460802 variants remaining after main filters.
+Running --r2-unphased with the following filters:
+  --ld-window-kb: 1000
+  --ld-window-r2: 0
+--r2-unphased: Results written to test_25_pct_may26_linkage_decay_1000kb.vcor .
+
+and 
+
+```bash
+python3 calculate_decay.py test_25_pct_may26_linkage_decay_1000kb.vcor 1000000 1000 > test_25_pct_may26_decay_1000kb2.txt
+```
+
+
+End time: Sun May 31 17:48:09 2026
