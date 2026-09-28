@@ -152,7 +152,9 @@ Although it is unlikely to support our data, we also evaluated the standard r^2 
 
 ```
 
-## Linkage Decay plot was conducted via:
+## Linkage Decay Logs:
+
+```bash
 (base) [kaiku@sh04-ln07 login /scratch/users/kaiku/sept1_26_pipeline/results/dec25_reanalysis/linkage_decay]$ cat test_25_pct_may26_linkage_decay_1000kb.log
 PLINK v2.0.0-a.7LM 64-bit Intel (27 Jun 2025)
 Options in effect:
@@ -189,6 +191,7 @@ Running --r2-unphased with the following filters:
   --ld-window-kb: 1000
   --ld-window-r2: 0
 --r2-unphased: Results written to test_25_pct_may26_linkage_decay_1000kb.vcor .
+```
 
 and 
 
