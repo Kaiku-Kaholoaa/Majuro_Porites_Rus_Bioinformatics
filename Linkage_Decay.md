@@ -148,7 +148,7 @@ Although it is unlikely to support our data, we also evaluated the standard r^2 
 
 #		prus_rare_unpruned			prus_rare_ld_r2_0.1			prus_rare_ld_r2_0.2	
 
-#snps	 	22,953,951						776,257						19,45,499
+#snps	 	22,953,951						776,257						1,945,499
 
 ```
 
