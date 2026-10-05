@@ -1,0 +1,69 @@
+```
+echo -e "sample\tROI_Q30_depth\tchr12_Q30_depth\tgenome_Q30_depth\tgenome_raw_depth\tROI_chr12_ratio\tROI_genomeQ30_ratio\tROI_mapq" \
+> all_samples_ROI_coverage_analysis.txt
+
+for roi in *.chr12_22.97-23.05Mb.coverage_Q30.tsv; do
+
+    # Get sample name from filename
+    sample=${roi%.chr12_22.97-23.05Mb.coverage_Q30.tsv}
+
+    q30_file="${sample}.coverage_Q30.tsv"
+    raw_file="${sample}.coverage.tsv"
+
+    # Mean Q30 depth and MAPQ within the 80 kb ROI
+    roi_depth=$(awk 'NR==2 {print $7}' "$roi")
+    roi_mapq=$(awk 'NR==2 {print $9}' "$roi")
+
+    # Mean Q30 depth across chr12
+    chr12_depth=$(awk '$1=="OZ038003.1" {print $7}' "$q30_file")
+
+    # Length-weighted genome-wide Q30 depth
+    genome_q30_depth=$(awk '
+        NR > 1 {
+            len = $3 - $2 + 1
+            weighted_depth += $7 * len
+            total_length += len
+        }
+        END {
+            if (total_length > 0)
+                print weighted_depth / total_length
+            else
+                print "NA"
+        }
+    ' "$q30_file")
+
+    # Length-weighted genome-wide RAW depth
+    genome_raw_depth=$(awk '
+        NR > 1 {
+            len = $3 - $2 + 1
+            weighted_depth += $7 * len
+            total_length += len
+        }
+        END {
+            if (total_length > 0)
+                print weighted_depth / total_length
+            else
+                print "NA"
+        }
+    ' "$raw_file")
+
+    # ROI Q30 depth / chr12 Q30 depth
+    roi_chr12_ratio=$(awk -v r="$roi_depth" -v c="$chr12_depth" '
+        BEGIN {
+            if (c > 0) print r/c
+            else print "NA"
+        }
+    ')
+
+    # ROI Q30 depth / genome-wide Q30 depth
+    roi_genome_ratio=$(awk -v r="$roi_depth" -v g="$genome_q30_depth" '
+        BEGIN {
+            if (g > 0) print r/g
+            else print "NA"
+        }
+    ')
+
+    echo -e "${sample}\t${roi_depth}\t${chr12_depth}\t${genome_q30_depth}\t${genome_raw_depth}\t${roi_chr12_ratio}\t${roi_genome_ratio}\t${roi_mapq}"
+```
+
+done >> all_samples_ROI_coverage_analysis.txt
